@@ -36,10 +36,7 @@ public class PricingService : IPricingService
         decimal classMultiplier)
     {
         var distance = (decimal)CalculateDistanceKm(departureAirport, arrivalAirport);
-        var economyPrice = Math.Round(
-            basePrice + (distance * PricePerKilometer),
-            2,
-            MidpointRounding.AwayFromZero);
+        var economyPrice =  basePrice;
         return Math.Round(economyPrice * classMultiplier, 2, MidpointRounding.AwayFromZero);
     }
 
