@@ -1,0 +1,180 @@
+﻿@model RegisterViewModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<SharedResource> L
+@{
+    ViewData["Title"] = L["Join AeroFly+"];
+    Layout = "_MainLayout";
+}
+
+@section Styles {
+    <style>
+        body {
+            background: #0a0a1a;
+        }
+
+        .auth-section {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 16px;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 100%);
+        }
+
+        .auth-card {
+            background: #111827;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+            .auth-card h2 {
+                color: #fff;
+                font-weight: 700;
+                font-size: 28px;
+                margin-bottom: 8px;
+            }
+
+            .auth-card p {
+                color: #888;
+                font-size: 14px;
+                margin-bottom: 28px;
+            }
+
+        .auth-input-group {
+            margin-bottom: 20px;
+        }
+
+            .auth-input-group label {
+                color: #ccc;
+                font-size: 13px;
+                font-weight: 600;
+                margin-bottom: 8px;
+                display: block;
+            }
+
+        .auth-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1f2937;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+            .auth-input:focus {
+                outline: none;
+                border-color: #0d6efd;
+                box-shadow: 0 0 0 3px rgba(13,110,253,0.15);
+            }
+
+            .auth-input::placeholder {
+                color: #4b5563;
+            }
+
+        .btn-auth {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #ffc107, #b8942e);
+            color: #0a0a1a;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+            .btn-auth:hover {
+                opacity: 0.9;
+            }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 24px;
+            color: #888;
+            font-size: 14px;
+        }
+
+            .auth-footer a {
+                color: #4da6ff;
+                text-decoration: none;
+                font-weight: 600;
+            }
+
+                .auth-footer a:hover {
+                    text-decoration: underline;
+                }
+
+        .field-error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .row-inputs {
+            display: flex;
+            gap: 16px;
+        }
+
+            .row-inputs .auth-input-group {
+                flex: 1;
+            }
+    </style>
+}
+
+<section class="auth-section">
+    <div class="auth-card">
+        <h2>@L["Join AeroFly+"]</h2>
+        <p>@L["Earn points, enjoy flexible bookings, and travel in style."]</p>
+
+        <form asp-action="Register" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
+
+            <div class="row-inputs">
+                <div class="auth-input-group">
+                    <label asp-for="FName">@L["First Name"]</label>
+                    <input asp-for="FName" class="auth-input" placeholder="e.g. John" />
+                    <span asp-validation-for="FName" class="field-error"></span>
+                </div>
+                <div class="auth-input-group">
+                    <label asp-for="LName">@L["Last Name"]</label>
+                    <input asp-for="LName" class="auth-input" placeholder="e.g. Doe" />
+                    <span asp-validation-for="LName" class="field-error"></span>
+                </div>
+            </div>
+
+            <div class="auth-input-group">
+                <label asp-for="Email">@L["Email Address"]</label>
+                <input asp-for="Email" class="auth-input" placeholder="name@example.com" />
+                <span asp-validation-for="Email" class="field-error"></span>
+            </div>
+
+            <div class="auth-input-group">
+                <label asp-for="Password">@L["Password"]</label>
+                <input asp-for="Password" class="auth-input" type="password" placeholder="@L["Create a strong password"]" />
+                <span asp-validation-for="Password" class="field-error"></span>
+            </div>
+
+            <button type="submit" class="btn-auth">@L["Create account"]</button>
+        </form>
+
+        <div class="auth-footer">
+            @L["Already a member?"]
+            <a asp-action="Login">@L["Sign in"]</a>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

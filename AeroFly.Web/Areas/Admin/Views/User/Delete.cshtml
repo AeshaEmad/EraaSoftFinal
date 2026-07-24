@@ -1,0 +1,78 @@
+﻿@model UserListVM
+@{
+    ViewData["Title"] = "Delete User";
+}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h3 class="card-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Delete User
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Are you sure you want to delete this user?</strong>
+                    <p class="mt-2 mb-0">This action cannot be undone and will remove all associated data including bookings, tickets, and reward points.</p>
+                </div>
+
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4 text-muted">Full Name</dt>
+                            <dd class="col-sm-8"><strong>@Model.FullName</strong></dd>
+
+                            <dt class="col-sm-4 text-muted">Email</dt>
+                            <dd class="col-sm-8">@Model.Email</dd>
+
+                            <dt class="col-sm-4 text-muted">Joined</dt>
+                            <dd class="col-sm-8">@Model.JoinedDate</dd>
+
+                            <dt class="col-sm-4 text-muted">Status</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-@Model.StatusColor">@Model.Status</span>
+                            </dd>
+
+                            <dt class="col-sm-4 text-muted">Total Bookings</dt>
+                            <dd class="col-sm-8">@Model.TotalBookings</dd>
+
+                            <dt class="col-sm-4 text-muted">Total Spent</dt>
+                            <dd class="col-sm-8">$@Model.TotalSpent.ToString("N2")</dd>
+
+                            <dt class="col-sm-4 text-muted">Reward Points</dt>
+                            <dd class="col-sm-8"><span class="badge bg-warning">@Model.RewardPoints</span></dd>
+
+                            <dt class="col-sm-4 text-muted">Role</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.IsAdmin)
+                                {
+                                    <span class="badge bg-danger">Admin</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">User</span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <form asp-action="DeleteConfirmed" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.UserId" />
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i> Confirm Delete
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

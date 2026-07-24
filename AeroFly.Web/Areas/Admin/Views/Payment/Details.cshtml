@@ -1,0 +1,157 @@
+﻿@model PaymentDetailsVM
+@{
+    ViewData["Title"] = "Payment Details";
+}
+
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">
+                        <i class="fas fa-credit-card me-2"></i> Payment Details
+                    </h3>
+                    <div>
+                        <span class="badge bg-@Model.StatusColor me-2" style="font-size:14px;">
+                            @Model.PayStatus
+                        </span>
+                        <a asp-action="Index" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i> Back
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Payment Info -->
+                    <div class="col-md-6">
+                        <div class="card card-info">
+                            <div class="card-header">
+                                <h5 class="card-title">Payment Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4">Transaction Ref</dt>
+                                    <dd class="col-sm-8"><code>@Model.TransactionRef</code></dd>
+
+                                    <dt class="col-sm-4">PNR</dt>
+                                    <dd class="col-sm-8"><strong>@Model.PNR</strong></dd>
+
+                                    <dt class="col-sm-4">Amount</dt>
+                                    <dd class="col-sm-8"><strong>$@Model.Amount.ToString("N2")</strong></dd>
+
+                                    <dt class="col-sm-4">Payment Method</dt>
+                                    <dd class="col-sm-8">@Model.PayMethod</dd>
+
+                                    <dt class="col-sm-4">Payment Date</dt>
+                                    <dd class="col-sm-8">@Model.PayDate.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                                    <dt class="col-sm-4">Payment Status</dt>
+                                    <dd class="col-sm-8">
+                                        <span class="badge bg-@Model.StatusColor">@Model.PayStatus</span>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Booking Info -->
+                    <div class="col-md-6">
+                        <div class="card card-success">
+                            <div class="card-header">
+                                <h5 class="card-title">Booking Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4">Passenger</dt>
+                                    <dd class="col-sm-8"><strong>@Model.PassengerName</strong></dd>
+
+                                    <dt class="col-sm-4">Email</dt>
+                                    <dd class="col-sm-8">@Model.Email</dd>
+
+                                    <dt class="col-sm-4">Flight</dt>
+                                    <dd class="col-sm-8">
+                                        <span class="badge bg-info">@Model.FlightNumber</span>
+                                    </dd>
+
+                                    <dt class="col-sm-4">Route</dt>
+                                    <dd class="col-sm-8">
+                                        <span class="badge bg-primary">@Model.DepartureIata</span>
+                                        <i class="fas fa-arrow-right mx-1"></i>
+                                        <span class="badge bg-primary">@Model.ArrivalIata</span>
+                                    </dd>
+
+                                    <dt class="col-sm-4">Departure</dt>
+                                    <dd class="col-sm-8">@Model.DepartureTime.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                                    <dt class="col-sm-4">Booking Status</dt>
+                                    <dd class="col-sm-8">
+                                        <span class="badge bg-@(Model.BookingStatus == "Confirmed" ? "success" : Model.BookingStatus == "Pending" ? "warning" : "secondary")">
+                                            @Model.BookingStatus
+                                        </span>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Passengers -->
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h5 class="card-title">
+                                    <i class="fas fa-users me-2"></i> Passengers (@Model.PassengerCount)
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                @if (Model.PassengerNames.Any())
+                                {
+                                    <ul class="list-group">
+                                        @foreach (var name in Model.PassengerNames)
+                                        {
+                                            <li class="list-group-item">
+                                                <i class="fas fa-user me-2"></i> @name
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <p class="text-muted">No passengers found.</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <div class="card card-secondary">
+                            <div class="card-header">
+                                <h5 class="card-title">Actions</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="btn-group" role="group">
+                                    @if (Model.PayStatus == "Completed")
+                                    {
+                                        <a asp-action="Refund" asp-route-id="@Model.PayId"
+                                           class="btn btn-warning" onclick="return confirm('Refund this payment?')">
+                                            <i class="fas fa-undo me-1"></i> Refund
+                                        </a>
+                                    }
+                                    <a asp-action="Delete" asp-route-id="@Model.PayId"
+                                       class="btn btn-danger" onclick="return confirm('Delete this payment?')">
+                                        <i class="fas fa-trash me-1"></i> Delete
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

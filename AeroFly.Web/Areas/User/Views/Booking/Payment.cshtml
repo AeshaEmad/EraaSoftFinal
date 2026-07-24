@@ -1,0 +1,147 @@
+﻿@model PaymentVM
+@{
+    ViewData["Title"] = "Payment";
+    var booking = ViewBag.Booking as AeroFly.Web.Models.Booking;
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">💳 Complete Payment</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Booking Summary -->
+                    <div class="alert alert-info">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Booking ID:</strong> AF@(booking?.BookingId.ToString("D6"))
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Total Amount:</strong> <span class="fw-bold text-success">$@Model.Amount.ToString("N2")</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reward Points -->
+                    <div class="card border-warning mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <strong><i class="fas fa-star text-warning me-1"></i> Reward Points</strong>
+                                <span>@Model.AvailablePoints points available</span>
+                            </div>
+
+                            @if (booking?.DiscountApplied == true)
+                            {
+                                <div class="alert alert-success mb-0">
+                                    @booking.PointsUsed points were applied to this booking.
+                                </div>
+                            }
+                            else if (Model.AvailablePoints > 0)
+                            {
+                                <form asp-area="User" asp-controller="Reward" asp-action="UsePoints" method="post" class="row g-2">
+                                    <input type="hidden" name="bookingId" value="@Model.BookingId" />
+                                    <div class="col-md-8">
+                                        <input type="number" name="pointsToUse" class="form-control"
+                                               min="1" max="@Model.AvailablePoints" required
+                                               placeholder="Points to use (100 points = $10)" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="submit" class="btn btn-warning w-100">Apply Points</button>
+                                    </div>
+                                </form>
+                            }
+                            else
+                            {
+                                <small class="text-muted">Book flights to earn points and use them for discounts.</small>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Stripe Payment Form -->
+                    <form id="payment-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="bookingId" value="@Model.BookingId" />
+
+                        <!-- Card Element -->
+                        <div id="card-element" class="mb-3" style="padding: 12px; border: 1px solid #ced4da; border-radius: 8px;">
+                            <!-- Stripe Elements will create form elements here -->
+                        </div>
+
+                        <div id="card-errors" class="text-danger mb-3" role="alert"></div>
+
+                        <!-- Payment Method (hidden) -->
+                        <input type="hidden" name="PaymentMethod" value="CreditCard" />
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <a asp-area="User" asp-controller="Booking" asp-action="Create"
+                               asp-route-flightId="@booking?.FlightId"
+                               asp-route-classId="@(booking?.Passengers.FirstOrDefault()?.ClassId ?? 0)"
+                               asp-route-passengers="@(booking?.Passengers.Count ?? 1)"
+                               class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Back
+                            </a>
+                            <button type="submit" id="submit-payment" class="btn btn-success">
+                                <i class="fas fa-check me-1"></i> Pay $@Model.Amount.ToString("N2")
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Stripe JS -->
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <script>
+        // Initialize Stripe
+        const stripe = Stripe('@Model.StripePublishableKey');
+        const clientSecret = '@Model.StripeClientSecret';
+
+        // Create Elements
+        const elements = stripe.elements({ clientSecret });
+        const cardElement = elements.create('card');
+        cardElement.mount('#card-element');
+
+        // Handle form submission
+        const form = document.getElementById('payment-form');
+        const submitButton = document.getElementById('submit-payment');
+        const cardErrors = document.getElementById('card-errors');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            submitButton.disabled = true;
+
+            const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+                payment_method: {
+                    card: cardElement,
+                    billing_details: {
+                        name: 'Customer'
+                    }
+                }
+            });
+
+            if (error) {
+                cardErrors.textContent = error.message;
+                submitButton.disabled = false;
+            } else if (paymentIntent.status === 'succeeded') {
+                // Success - submit to server
+                const bookingId = document.getElementById('bookingId').value;
+                window.location.href = `/User/Booking/PaymentSuccess?paymentIntentId=${paymentIntent.id}&bookingId=${bookingId}`;
+            }
+        });
+
+        // Handle card errors
+        cardElement.on('change', (event) => {
+            if (event.error) {
+                cardErrors.textContent = event.error.message;
+            } else {
+                cardErrors.textContent = '';
+            }
+        });
+    </script>
+}

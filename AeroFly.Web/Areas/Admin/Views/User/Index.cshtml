@@ -1,0 +1,212 @@
+﻿@model List<UserListVM>
+@{
+    ViewData["Title"] = "Users Management";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="card-title">
+                <i class="fas fa-users me-2"></i> All Users
+            </h3>
+            <span class="badge bg-primary">@Model.Count Total</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Filter Section -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card card-secondary">
+                    <div class="card-header">
+                        <h5 class="card-title">
+                            <i class="fas fa-filter me-1"></i> Filters
+                        </h5>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form method="get" class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Search</label>
+                                <input type="text" name="searchTerm" class="form-control form-control-sm"
+                                       placeholder="Name or Email" value="@Context.Request.Query["searchTerm"]" />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Status</label>
+                                <select name="status" class="form-control form-control-sm">
+                                    <option value="">All</option>
+                                    @foreach (var s in ViewBag.Statuses)
+                                    {
+                                        <option value="@s" selected="@(Context.Request.Query["status"] == s)">@s</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">User Type</label>
+                                <select name="isAdmin" class="form-control form-control-sm">
+                                    <option value="">All</option>
+                                    <option value="true" selected="@(Context.Request.Query["isAdmin"] == "true")">Admin</option>
+                                    <option value="false" selected="@(Context.Request.Query["isAdmin"] == "false")">Regular</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Sort By</label>
+                                <select name="sortBy" class="form-control form-control-sm">
+                                    <option value="joined" selected="@(Context.Request.Query["sortBy"] == "joined")">Joined Date</option>
+                                    <option value="name" selected="@(Context.Request.Query["sortBy"] == "name")">Name</option>
+                                    <option value="email" selected="@(Context.Request.Query["sortBy"] == "email")">Email</option>
+                                    <option value="bookings" selected="@(Context.Request.Query["sortBy"] == "bookings")">Bookings</option>
+                                    <option value="points" selected="@(Context.Request.Query["sortBy"] == "points")">Reward Points</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                <a asp-action="Index" class="btn btn-secondary btn-sm ms-1">
+                                    <i class="fas fa-undo"></i>
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Table -->
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover table-striped" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Joined</th>
+                            <th>Status</th>
+                            <th>Bookings</th>
+                            <th>Points</th>
+                            <th>Spent</th>
+                            <th>Role</th>
+                            <th style="width: 150px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@user.FullName</strong>
+                                </td>
+                                <td>@user.Email</td>
+                                <td>
+                                    <small>@user.JoinedDate</small>
+                                    <br />
+                                    <span class="text-muted">@user.AccountAge</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-@user.StatusColor">@user.Status</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">@user.TotalBookings</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning">@user.RewardPoints</span>
+                                </td>
+                                <td>$@user.TotalSpent.ToString("N0")</td>
+                                <td>
+                                    @if (user.IsAdmin)
+                                    {
+                                        <span class="badge bg-danger">Admin</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">User</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@user.UserId"
+                                           class="btn btn-info btn-sm" title="Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if (!user.IsAdmin)
+                                        {
+                                            if (user.Status == "Locked")
+                                            {
+                                                <form asp-action="Unblock" asp-route-id="@user.UserId" method="post"
+                                                      class="d-inline" onsubmit="return confirm('Unblock this user?')">
+                                                    <button class="btn btn-success btn-sm" title="Unblock" type="submit">
+                                                        <i class="fas fa-unlock"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <form asp-action="Block" asp-route-id="@user.UserId" method="post"
+                                                      class="d-inline" onsubmit="return confirm('Block this user for 15 minutes?')">
+                                                    <button class="btn btn-warning btn-sm" title="Block" type="submit">
+                                                        <i class="fas fa-lock"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            <form asp-action="MakeAdmin" asp-route-id="@user.UserId" method="post"
+                                                  class="d-inline" onsubmit="return confirm('Promote this user to Admin?')">
+                                                <button class="btn btn-primary btn-sm" title="Make Admin" type="submit">
+                                                    <i class="fas fa-user-shield"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="RemoveAdmin" asp-route-id="@user.UserId" method="post"
+                                                  class="d-inline" onsubmit="return confirm('Remove admin privileges?')">
+                                                <button class="btn btn-secondary btn-sm" title="Remove Admin" type="submit">
+                                                    <i class="fas fa-user-minus"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        <a asp-action="Delete" asp-route-id="@user.UserId"
+                                           class="btn btn-danger btn-sm" title="Delete"
+                                           onclick="return confirm('Delete this user? This will remove all their data!')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                <h5 class="text-muted">No users found</h5>
+                <p class="text-muted">Users will appear here when they register.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if ($('#usersTable tbody tr').length > 0) {
+                $('#usersTable').DataTable({
+                    language: {
+                        search: "Search:",
+                        lengthMenu: "Show _MENU_ entries",
+                        info: "Showing _START_ to _END_ of _TOTAL_ users",
+                    },
+                    order: [[2, 'desc']],
+                    pageLength: 10
+                });
+            }
+        });
+    </script>
+}

@@ -1,0 +1,95 @@
+﻿@model BookingCreateVM
+@{
+    ViewData["Title"] = "Passenger Details";
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">✈️ Enter Passenger Details</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Flight Summary -->
+                    <div class="alert alert-info">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Flight:</strong> @Model.FlightNumber
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Seat Class:</strong> @Model.SeatClassName
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Route:</strong> @Model.Route
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Departure:</strong> @Model.DepartureTime?.ToString("dd MMM yyyy HH:mm")
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Passengers:</strong> @Model.PassengerCount
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Total Price:</strong> <span class="fw-bold">$@Model.TotalPrice.ToString("N2")</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+                        <input asp-for="FlightId" type="hidden" />
+                        <input asp-for="ClassId" type="hidden" />
+                        <input asp-for="PassengerCount" type="hidden" />
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        @for (int i = 0; i < Model.Passengers.Count; i++)
+                        {
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Passenger @(i + 1)</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label asp-for="Passengers[i].FullName" class="form-label"></label>
+                                            <input asp-for="Passengers[i].FullName" class="form-control" placeholder="e.g. John Doe" />
+                                            <span asp-validation-for="Passengers[i].FullName" class="text-danger"></span>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label asp-for="Passengers[i].PassportNumber" class="form-label"></label>
+                                            <input asp-for="Passengers[i].PassportNumber" class="form-control" placeholder="e.g. A1234567" />
+                                            <span asp-validation-for="Passengers[i].PassportNumber" class="text-danger"></span>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label asp-for="Passengers[i].Age" class="form-label"></label>
+                                            <input asp-for="Passengers[i].Age" class="form-control" type="number" min="0" max="120" placeholder="e.g. 25" />
+                                            <span asp-validation-for="Passengers[i].Age" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <a asp-area="User" asp-controller="Home" asp-action="Details"
+                               asp-route-id="@Model.FlightId" asp-route-passengers="@Model.PassengerCount"
+                               class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Back
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                Review & Confirm <i class="fas fa-arrow-right ms-1"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,135 @@
+﻿@model FlightCreateVM
+@{
+    ViewData["Title"] = "Add New Flight";
+}
+
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-plus-circle me-2"></i> Add New Flight
+                </h3>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2"></div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label asp-for="FlightNum" class="form-label"></label>
+                                <input asp-for="FlightNum" class="form-control" placeholder="e.g. AF123" />
+                                <span asp-validation-for="FlightNum" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label asp-for="DepartureTime" class="form-label"></label>
+                                <input asp-for="DepartureTime" class="form-control" type="datetime-local" />
+                                <span asp-validation-for="DepartureTime" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label asp-for="ArrivalTime" class="form-label"></label>
+                                <input asp-for="ArrivalTime" class="form-control" type="datetime-local" />
+                                <span asp-validation-for="ArrivalTime" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="DepartureAirportId" class="form-label"></label>
+                                <select asp-for="DepartureAirportId" class="form-control" asp-items="@(new SelectList(Model.Airports, "AirportId", "FullLocation"))">
+                                    <option value="">-- Select Departure Airport --</option>
+                                </select>
+                                <span asp-validation-for="DepartureAirportId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ArrivalAirportId" class="form-label"></label>
+                                <select asp-for="ArrivalAirportId" class="form-control" asp-items="@(new SelectList(Model.Airports, "AirportId", "FullLocation"))">
+                                    <option value="">-- Select Arrival Airport --</option>
+                                </select>
+                                <span asp-validation-for="ArrivalAirportId" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label asp-for="BasePrice" class="form-label"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="BasePrice" class="form-control" placeholder="0.00" step="0.01" />
+                                </div>
+                                <span asp-validation-for="BasePrice" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label asp-for="AvailableSeats" class="form-label"></label>
+                                <input asp-for="AvailableSeats" class="form-control" placeholder="e.g. 150" />
+                                <span asp-validation-for="AvailableSeats" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label asp-for="Status" class="form-label"></label>
+                                <select asp-for="Status" class="form-control">
+                                    <option value="Scheduled">Scheduled</option>
+                                    <option value="Delayed">Delayed</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                    <option value="Completed">Completed</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Back to List
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Save Flight
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Auto uppercase flight number
+        document.getElementById('FlightNum')?.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+
+        // Validate departure < arrival
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const departure = new Date(document.getElementById('DepartureTime').value);
+            const arrival = new Date(document.getElementById('ArrivalTime').value);
+
+            if (departure >= arrival) {
+                e.preventDefault();
+                alert('Arrival time must be after departure time.');
+                return false;
+            }
+            return true;
+        });
+    </script>
+}

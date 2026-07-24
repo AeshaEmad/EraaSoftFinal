@@ -1,0 +1,188 @@
+@model SearchFlightVM
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<SharedResource> L
+@{
+    ViewData["Title"] = L["Search flights"];
+    var results = ViewData["Results"] as List<FlightResultVM> ?? new List<FlightResultVM>();
+    var passengerCount = ViewData["PassengerCount"] ?? 1;
+}
+
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-copy text-center">
+            <span class="hero-eyebrow"><i class="fa-solid fa-earth-americas"></i> @L["Your next journey starts here"]</span>
+            <h1>@L["Where will you fly next?"]</h1>
+            <p>@L["Compare available flights, choose your perfect seat and manage the whole journey from one beautifully simple place."]</p>
+            <div class="hero-proof">
+                <span><i class="fa-solid fa-circle-check"></i> @L["Transparent pricing"]</span>
+                <span><i class="fa-solid fa-circle-check"></i> @L["Secure booking"]</span>
+                <span><i class="fa-solid fa-circle-check"></i> @L["Rewards on every trip"]</span>
+            </div>
+        </div>
+
+        <div class="search-card">
+            <form asp-area="User" asp-controller="Home" asp-action="Index" method="get">
+                <div class="search-tabs" role="group" aria-label="Trip type">
+                    <input type="radio" class="btn-check" name="TripType" id="oneWay" value="OneWay" checked onchange="toggleReturnDate(false)" />
+                    <label class="btn" for="oneWay"><i class="fa-solid fa-arrow-right me-2"></i>@L["One way"]</label>
+                    <input type="radio" class="btn-check" name="TripType" id="roundTrip" value="RoundTrip" onchange="toggleReturnDate(true)" />
+                    <label class="btn" for="roundTrip"><i class="fa-solid fa-arrow-right-arrow-left me-2"></i>@L["Round trip"]</label>
+                </div>
+
+                <div class="search-fields">
+                    <div class="search-field">
+                        <label for="departureAirport"><i class="fa-solid fa-plane-departure"></i> @L["From"]</label>
+                        <select id="departureAirport" name="departureAirportId" class="form-select">
+                            <option value="">@L["Choose origin"]</option>
+                            @foreach (var airport in Model.Airports ?? new List<AirportVM>())
+                            {
+                                <option value="@airport.AirportId" selected="@(Model.DepartureAirportId == airport.AirportId)">@airport.FullLocation</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="search-field">
+                        <label for="arrivalAirport"><i class="fa-solid fa-plane-arrival"></i> @L["To"]</label>
+                        <select id="arrivalAirport" name="arrivalAirportId" class="form-select">
+                            <option value="">@L["Choose destination"]</option>
+                            @foreach (var airport in Model.Airports ?? new List<AirportVM>())
+                            {
+                                <option value="@airport.AirportId" selected="@(Model.ArrivalAirportId == airport.AirportId)">@airport.FullLocation</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="search-field">
+                        <label for="departureDate"><i class="fa-regular fa-calendar"></i> @L["Departure"]</label>
+                        <input id="departureDate" name="departureDate" class="form-control" type="date" value="@Model.DepartureDate?.ToString("yyyy-MM-dd")" />
+                    </div>
+
+                    <div class="search-field return-field" id="returnDateContainer">
+                        <label for="returnDate"><i class="fa-regular fa-calendar-check"></i> @L["Return"]</label>
+                        <input id="returnDate" name="returnDate" class="form-control" type="date" />
+                    </div>
+
+                    <div class="search-field">
+                        <label for="passengers"><i class="fa-regular fa-user"></i> @L["Travelers"]</label>
+                        <input id="passengers" name="passengers" class="form-control" type="number" min="1" max="10" value="@Model.PassengerCount" />
+                    </div>
+
+                    <div class="search-field">
+                        <label for="seatClass"><i class="fa-solid fa-couch"></i> @L["Cabin"]</label>
+                        <select id="seatClass" name="seatClassId" class="form-select">
+                            <option value="">@L["All classes"]</option>
+                            @foreach (var seatClass in Model.SeatClasses ?? new List<SeatClassVM>())
+                            {
+                                <option value="@seatClass.ClassId" selected="@(Model.SeatClassId == seatClass.ClassId)">@L[seatClass.ClassName]</option>
+                            }
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary search-submit"><i class="fa-solid fa-magnifying-glass me-2"></i>@L["Search"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<div class="benefit-strip">
+    <div class="container">
+        <div class="benefit-inner">
+            <div class="benefit-item"><i class="fa-solid fa-bolt"></i><div><strong>@L["Fast and effortless"]</strong><small>@L["Book your trip in just a few steps"]</small></div></div>
+            <div class="benefit-item"><i class="fa-solid fa-lock"></i><div><strong>@L["Payments protected"]</strong><small>@L["Your checkout is safe and secure"]</small></div></div>
+            <div class="benefit-item"><i class="fa-solid fa-star"></i><div><strong>@L["Travel that rewards"]</strong><small>@L["Earn points whenever you fly"]</small></div></div>
+        </div>
+    </div>
+</div>
+
+<section class="results-section">
+    <div class="container">
+        @if (results.Any())
+        {
+            <div class="section-heading">
+                <div>
+                    <div class="kicker">@L["Available journeys"]</div>
+                    <h2>@L["Flights that match your search"]</h2>
+                </div>
+                <span class="result-meta"><i class="fa-regular fa-user me-1"></i> @L["{0} traveler(s) · {1} result(s)", passengerCount, results.Count]</span>
+            </div>
+
+            <div class="row g-4">
+                @foreach (var flight in results)
+                {
+                    <div class="col-md-6 col-xl-4">
+                        <article class="flight-card">
+                            <div class="flight-card-header d-flex justify-content-between align-items-center">
+                                <span class="flight-number"><i class="fa-solid fa-plane me-2 text-primary"></i>@flight.FlightNum</span>
+                                <span class="status-pill @(flight.IsAvailable ? "available" : "unavailable")">@(flight.IsAvailable ? L["Available"] : L["Sold out"])</span>
+                            </div>
+                            <div class="flight-card-body">
+                                <div class="route-display">
+                                    <div class="route-point">
+                                        <div class="route-time">@flight.DepartureTime.ToString("HH:mm")</div>
+                                        <div class="route-city">@flight.DepartureCity</div>
+                                        <div class="route-iata">@flight.DepartureIata</div>
+                                    </div>
+                                    <div class="flight-path">
+                                        <span class="duration">@flight.DurationHours</span>
+                                        <span class="path-line"><i class="fa-solid fa-plane"></i></span>
+                                    </div>
+                                    <div class="route-point">
+                                        <div class="route-time">@flight.ArrivalTime.ToString("HH:mm")</div>
+                                        <div class="route-city">@flight.ArrivalCity</div>
+                                        <div class="route-iata">@flight.ArrivalIata</div>
+                                    </div>
+                                </div>
+                                <div class="flight-facts">
+                                    <div class="flight-fact"><small>@L["Departure"]</small><strong>@flight.DepartureTime.ToString("dd MMM yyyy")</strong></div>
+                                    <div class="flight-fact text-end"><small>@L["Seats remaining"]</small><strong>@flight.AvailableSeats</strong></div>
+                                </div>
+                                <div class="flight-price">
+                                    <small>@L["Per traveler"]</small>
+                                    <strong>$@flight.PricePerPassenger.ToString("N0")</strong>
+                                </div>
+                            </div>
+                            <div class="flight-card-footer">
+                                @if (flight.IsAvailable)
+                                {
+                                    <a asp-area="User" asp-controller="Home" asp-action="Details" asp-route-id="@flight.FlightId" asp-route-passengers="@passengerCount" class="btn btn-primary w-100">@L["View flight"] <i class="fa-solid fa-arrow-right ms-2"></i></a>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-secondary w-100" disabled>@L["Not available"]</button>
+                                }
+                            </div>
+                        </article>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <span class="empty-icon"><i class="fa-solid fa-route"></i></span>
+                <h3>@L["No flights found yet"]</h3>
+                <p>@L["Adjust your route or travel date and search again. New journeys are added regularly."]</p>
+                <a href="#departureAirport" class="btn btn-brand mt-2">@L["Update search"]</a>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function toggleReturnDate(show) {
+            var container = document.getElementById('returnDateContainer');
+            if (container) container.style.display = show ? 'block' : 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var dateInput = document.querySelector('input[name="departureDate"]');
+            if (dateInput && !dateInput.value) {
+                var tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                dateInput.value = tomorrow.toISOString().split('T')[0];
+            }
+        });
+    </script>
+}

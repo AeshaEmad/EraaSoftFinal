@@ -1,0 +1,202 @@
+﻿@model UserDetailsVM
+@{
+    ViewData["Title"] = "User Details";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">
+                        <i class="fas fa-user me-2"></i> @Model.FullName
+                    </h3>
+                    <div>
+                        <span class="badge bg-@Model.StatusColor me-2" style="font-size:14px;">
+                            @Model.Status
+                        </span>
+                        @if (Model.IsAdmin)
+                        {
+                            <span class="badge bg-danger me-2">Admin</span>
+                        }
+                        <a asp-action="Index" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i> Back
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- User Info -->
+                    <div class="col-md-6">
+                        <div class="card card-info">
+                            <div class="card-header">
+                                <h5 class="card-title">User Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4">Full Name</dt>
+                                    <dd class="col-sm-8"><strong>@Model.FullName</strong></dd>
+
+                                    <dt class="col-sm-4">Email</dt>
+                                    <dd class="col-sm-8">@Model.Email</dd>
+
+                                    <dt class="col-sm-4">Joined</dt>
+                                    <dd class="col-sm-8">@Model.JoinedDate (@Model.AccountAge)</dd>
+
+                                    <dt class="col-sm-4">Email Confirmed</dt>
+                                    <dd class="col-sm-8">@(Model.EmailConfirmed ? "✅ Yes" : "❌ No")</dd>
+
+                                    <dt class="col-sm-4">OTP Verified</dt>
+                                    <dd class="col-sm-8">@(Model.OtpVerified ? "✅ Yes" : "❌ No")</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security & Stats -->
+                    <div class="col-md-6">
+                        <div class="card card-success">
+                            <div class="card-header">
+                                <h5 class="card-title">Security & Statistics</h5>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4">Status</dt>
+                                    <dd class="col-sm-8">
+                                        <span class="badge bg-@Model.StatusColor">@Model.Status</span>
+                                    </dd>
+
+                                    @if (Model.IsLockedOut && Model.LockoutEnd.HasValue)
+                                    {
+                                        <dt class="col-sm-4">Lockout End</dt>
+                                        <dd class="col-sm-8">@Model.LockoutEnd.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+                                    }
+
+                                    <dt class="col-sm-4">Failed Attempts</dt>
+                                    <dd class="col-sm-8">@Model.AccessFailedCount</dd>
+
+                                    <dt class="col-sm-4">Last Login</dt>
+                                    <dd class="col-sm-8">@(Model.LastLoginDate?.ToString("dd/MM/yyyy HH:mm") ?? "Never")</dd>
+
+                                    <dt class="col-sm-4">Reward Points</dt>
+                                    <dd class="col-sm-8"><span class="badge bg-warning">@Model.RewardPoints</span></dd>
+
+                                    <dt class="col-sm-4">Total Bookings</dt>
+                                    <dd class="col-sm-8">@Model.TotalBookings</dd>
+
+                                    <dt class="col-sm-4">Total Spent</dt>
+                                    <dd class="col-sm-8"><strong>$@Model.TotalSpent.ToString("N2")</strong></dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Bookings -->
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h5 class="card-title">
+                                    <i class="fas fa-ticket-alt me-2"></i> Recent Bookings
+                                </h5>
+                            </div>
+                            <div class="card-body p-0">
+                                @if (Model.RecentBookings.Any())
+                                {
+                                    <table class="table table-striped mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>PNR</th>
+                                                <th>Flight</th>
+                                                <th>Route</th>
+                                                <th>Departure</th>
+                                                <th>Date</th>
+                                                <th>Amount</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var booking in Model.RecentBookings)
+                                            {
+                                                <tr>
+                                                    <td><strong>@booking.PNR</strong></td>
+                                                    <td>@booking.FlightNumber</td>
+                                                    <td>
+                                                        <span class="badge bg-primary">@booking.DepartureIata</span>
+                                                        <i class="fas fa-arrow-right mx-1"></i>
+                                                        <span class="badge bg-primary">@booking.ArrivalIata</span>
+                                                    </td>
+                                                    <td>@booking.DepartureTime.ToString("dd/MM HH:mm")</td>
+                                                    <td>@booking.BookingDate.ToString("dd/MM/yyyy")</td>
+                                                    <td>$@booking.TotalPrice.ToString("N2")</td>
+                                                    <td>
+                                                        <span class="badge bg-@booking.StatusColor">@booking.Status</span>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                }
+                                else
+                                {
+                                    <div class="text-center py-4">
+                                        <p class="text-muted">No bookings found for this user.</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <div class="card card-secondary">
+                            <div class="card-header">
+                                <h5 class="card-title">Actions</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="btn-group" role="group">
+                                    @if (!Model.IsAdmin)
+                                    {
+                                        if (Model.Status == "Locked")
+                                        {
+                                            <form asp-action="Unblock" asp-route-id="@Model.UserId" method="post"
+                                                  class="d-inline" onsubmit="return confirm('Unblock this user?')">
+                                                <button class="btn btn-success" type="submit"><i class="fas fa-unlock me-1"></i> Unblock</button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="Block" asp-route-id="@Model.UserId" method="post"
+                                                  class="d-inline" onsubmit="return confirm('Block this user for 15 minutes?')">
+                                                <button class="btn btn-warning" type="submit"><i class="fas fa-lock me-1"></i> Block</button>
+                                            </form>
+                                        }
+                                        <form asp-action="MakeAdmin" asp-route-id="@Model.UserId" method="post"
+                                              class="d-inline" onsubmit="return confirm('Promote this user to Admin?')">
+                                            <button class="btn btn-primary" type="submit"><i class="fas fa-user-shield me-1"></i> Make Admin</button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="RemoveAdmin" asp-route-id="@Model.UserId" method="post"
+                                              class="d-inline" onsubmit="return confirm('Remove admin privileges?')">
+                                            <button class="btn btn-secondary" type="submit"><i class="fas fa-user-minus me-1"></i> Remove Admin</button>
+                                        </form>
+                                    }
+                                    <a asp-action="Delete" asp-route-id="@Model.UserId"
+                                       class="btn btn-danger" onclick="return confirm('Delete this user? This will remove all their data!')">
+                                        <i class="fas fa-trash me-1"></i> Delete User
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

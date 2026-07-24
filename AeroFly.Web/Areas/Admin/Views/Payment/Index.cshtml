@@ -1,0 +1,181 @@
+﻿@model List<PaymentListVM>
+@{
+    ViewData["Title"] = "Payments Management";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="card-title">
+                <i class="fas fa-credit-card me-2"></i> All Payments
+            </h3>
+            <span class="badge bg-primary">@Model.Count Total</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Filter Section -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card card-secondary">
+                    <div class="card-header">
+                        <h5 class="card-title">
+                            <i class="fas fa-filter me-1"></i> Filters
+                        </h5>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form method="get" class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Search</label>
+                                <input type="text" name="searchTerm" class="form-control form-control-sm"
+                                       placeholder="Transaction, PNR, Name" value="@Context.Request.Query["searchTerm"]" />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Status</label>
+                                <select name="status" class="form-control form-control-sm">
+                                    <option value="">All</option>
+                                    @foreach (var s in ViewBag.Statuses)
+                                    {
+                                        <option value="@s" selected="@(Context.Request.Query["status"] == s)">@s</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Payment Method</label>
+                                <select name="paymentMethod" class="form-control form-control-sm">
+                                    <option value="">All</option>
+                                    @foreach (var pm in ViewBag.PaymentMethods)
+                                    {
+                                        <option value="@pm" selected="@(Context.Request.Query["paymentMethod"] == pm)">@pm</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">From Date</label>
+                                <input type="date" name="fromDate" class="form-control form-control-sm"
+                                       value="@Context.Request.Query["fromDate"]" />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">To Date</label>
+                                <input type="date" name="toDate" class="form-control form-control-sm"
+                                       value="@Context.Request.Query["toDate"]" />
+                            </div>
+                            <div class="col-md-1 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                <a asp-action="Index" class="btn btn-secondary btn-sm ms-1">
+                                    <i class="fas fa-undo"></i>
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Table -->
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover table-striped" id="paymentsTable">
+                    <thead>
+                        <tr>
+                            <th>Transaction</th>
+                            <th>PNR</th>
+                            <th>Passenger</th>
+                            <th>Flight</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th style="width: 130px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var payment in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <small><code>@payment.TransactionRef.Substring(0, 8)...</code></small>
+                                </td>
+                                <td>
+                                    <strong>@payment.PNR</strong>
+                                </td>
+                                <td>
+                                    <div>@payment.PassengerName</div>
+                                    <small class="text-muted">@payment.Email</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">@payment.FlightNumber</span>
+                                </td>
+                                <td>
+                                    <strong>$@payment.Amount.ToString("N2")</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">@payment.PayMethod</span>
+                                </td>
+                                <td>
+                                    <small>@payment.PayDate.ToString("dd/MM/yyyy HH:mm")</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-@payment.StatusColor">@payment.PayStatus</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@payment.PayId"
+                                           class="btn btn-info btn-sm" title="Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if (payment.PayStatus == "Completed")
+                                        {
+                                            <a asp-action="Refund" asp-route-id="@payment.PayId"
+                                               class="btn btn-warning btn-sm" title="Refund"
+                                               onclick="return confirm('Refund this payment?')">
+                                                <i class="fas fa-undo"></i>
+                                            </a>
+                                        }
+                                        <a asp-action="Delete" asp-route-id="@payment.PayId"
+                                           class="btn btn-danger btn-sm" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-credit-card fa-4x text-muted mb-3"></i>
+                <h5 class="text-muted">No payments found</h5>
+                <p class="text-muted">Payments will appear here when users complete bookings.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if ($('#paymentsTable tbody tr').length > 0) {
+                $('#paymentsTable').DataTable({
+                    language: {
+                        search: "Search:",
+                        lengthMenu: "Show _MENU_ entries",
+                        info: "Showing _START_ to _END_ of _TOTAL_ payments",
+                    },
+                    order: [[6, 'desc']],
+                    pageLength: 10
+                });
+            }
+        });
+    </script>
+}

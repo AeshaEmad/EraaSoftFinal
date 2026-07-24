@@ -1,0 +1,21 @@
+@model TicketVerificationVM
+@{
+    ViewData["Title"] = "Ticket verification";
+    var color = Model.IsValid ? "success" : Model.WasAlreadyUsed ? "warning" : "danger";
+}
+
+<div class="alert alert-@color">
+    <h3>@Model.Message</h3>
+</div>
+@if (Model.PassengerName != null)
+{
+    <dl class="row">
+        <dt class="col-sm-3">Passenger</dt><dd class="col-sm-9">@Model.PassengerName</dd>
+        <dt class="col-sm-3">Passport</dt><dd class="col-sm-9">@Model.PassportNumber</dd>
+        <dt class="col-sm-3">Flight</dt><dd class="col-sm-9">@Model.FlightNumber</dd>
+        <dt class="col-sm-3">Seat</dt><dd class="col-sm-9">@Model.SeatNumber</dd>
+        <dt class="col-sm-3">Booking</dt><dd class="col-sm-9">@Model.BookingStatus</dd>
+        <dt class="col-sm-3">Used at</dt><dd class="col-sm-9">@Model.UsedAt?.ToString("u")</dd>
+    </dl>
+}
+<a asp-action="Scan" class="btn btn-secondary">Scan another ticket</a>

@@ -1,0 +1,115 @@
+@model List<BookingListVM>
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<SharedResource> L
+@{
+    ViewData["Title"] = L["My bookings"];
+}
+
+<section class="account-page">
+    <div class="container">
+        <div class="page-intro">
+            <div class="page-intro-copy">
+                <div class="eyebrow">@L["Your journeys"]</div>
+                <h1>@L["My bookings"]</h1>
+                <p>@L["Everything you need for your upcoming and previous trips, in one place."]</p>
+            </div>
+            <a asp-area="User" asp-controller="Home" asp-action="Index" class="btn btn-brand"><i class="fa-solid fa-plus me-2"></i>@L["Book a new flight"]</a>
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="account-panel">
+                <div class="panel-header">
+                    <div><h2>@L["Booking history"]</h2><p>@L["{0} reservation(s) connected to your account", Model.Count]</p></div>
+                    <span class="soft-badge bg-primary"><i class="fa-solid fa-ticket"></i> @L["{0} total", Model.Count]</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table account-table">
+                        <thead>
+                            <tr><th>@L["Reference"]</th><th>@L["Flight"]</th><th>@L["Route"]</th><th>@L["Departure"]</th><th>@L["Travelers"]</th><th>@L["Amount"]</th><th>@L["Booking"]</th><th>@L["Payment"]</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var booking in Model)
+                            {
+                                <tr>
+                                    <td><span class="pnr-code">@booking.PNR</span></td>
+                                    <td><strong>@booking.FlightNumber</strong></td>
+                                    <td><span class="route-chip">@booking.DepartureIata <i class="fa-solid fa-arrow-right-long"></i> @booking.ArrivalIata</span></td>
+                                    <td><span class="d-block fw-semibold">@booking.DepartureTime.ToString("dd MMM yyyy")</span><small class="text-muted">@booking.DepartureTime.ToString("HH:mm")</small></td>
+                                    <td><i class="fa-regular fa-user me-1 text-muted"></i>@booking.PassengerCount</td>
+                                    <td class="fw-bold">$@booking.TotalPrice.ToString("N2")</td>
+                                    <td><span class="soft-badge bg-@booking.StatusColor">@L[booking.Status]</span></td>
+                                    <td>
+                                        @if (booking.PaymentStatus == "Completed")
+                                        { <span class="soft-badge bg-success"><i class="fa-solid fa-check"></i>@L["Paid"]</span> }
+                                        else if (booking.PaymentStatus == "Pending")
+                                        { <span class="soft-badge bg-warning"><i class="fa-regular fa-clock"></i>@L["Pending"]</span> }
+                                        else if (booking.PaymentStatus == "Refunded")
+                                        { <span class="soft-badge bg-info"><i class="fa-solid fa-rotate-left"></i>@L["Refunded"]</span> }
+                                        else
+                                        { <span class="soft-badge bg-secondary">@L["Not paid"]</span> }
+                                    </td>
+                                    <td class="text-end">
+                                        @if (booking.Status != "Cancelled" && booking.Status != "Completed")
+                                        {
+                                            <button type="button" class="btn btn-outline-danger icon-button" title="@L["Cancel booking"]" aria-label="@L["Cancel booking"]"
+                                                    data-bs-toggle="modal" data-bs-target="#cancelModal" data-bookingid="@booking.BookingId"
+                                                    data-pnr="@booking.PNR" data-departure="@booking.DepartureTime.ToString("dd/MM/yyyy HH:mm")">
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <span class="empty-icon"><i class="fa-solid fa-ticket"></i></span>
+                <h3>@L["Your suitcase is ready"]</h3>
+                <p>@L["You do not have any bookings yet. Find your next destination and begin a new journey."]</p>
+                <a asp-area="User" asp-controller="Home" asp-action="Index" class="btn btn-brand mt-2"><i class="fa-solid fa-magnifying-glass me-2"></i>@L["Explore flights"]</a>
+            </div>
+        }
+    </div>
+</section>
+
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div><small class="text-danger fw-bold text-uppercase">@L["Please confirm"]</small><h5 class="modal-title mt-1" id="cancelModalLabel">@L["Cancel this booking?"]</h5></div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted">You are about to cancel reservation <strong id="modalPnr" class="text-dark"></strong>, departing <strong id="modalDeparture" class="text-dark"></strong>.</p>
+                <div class="alert alert-warning mb-0"><i class="fa-solid fa-circle-info me-2"></i>Bookings cancelled at least 24 hours before departure receive a full refund.</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">@L["Keep booking"]</button>
+                <form id="cancelForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger"><i class="fa-solid fa-xmark me-2"></i>@L["Confirm cancellation"]</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#cancelModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var modal = $(this);
+                modal.find('#modalPnr').text(button.data('pnr'));
+                modal.find('#modalDeparture').text(button.data('departure'));
+                modal.find('#cancelForm').attr('action', '/User/Booking/Cancel/' + button.data('bookingid'));
+            });
+        });
+    </script>
+}

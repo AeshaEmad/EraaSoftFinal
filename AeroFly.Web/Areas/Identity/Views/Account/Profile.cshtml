@@ -1,0 +1,60 @@
+@model ProfileViewModel
+@{
+    ViewData["Title"] = "My Profile";
+    var initial = string.IsNullOrWhiteSpace(Model.FName) ? "U" : Model.FName.Substring(0, 1).ToUpperInvariant();
+}
+
+<section class="account-page">
+    <div class="container">
+        <div class="page-intro">
+            <div class="page-intro-copy"><div class="eyebrow">Account settings</div><h1>Personal profile</h1><p>Keep your traveler details accurate and up to date.</p></div>
+            <a asp-area="User" asp-controller="Home" asp-action="Index" class="btn btn-ghost"><i class="fa-solid fa-arrow-left me-2"></i>Back to flights</a>
+        </div>
+
+        <div class="profile-shell">
+            <div class="row g-0">
+                <div class="col-lg-4">
+                    <aside class="profile-aside">
+                        <div class="profile-big-avatar">@initial</div>
+                        <h2>@Model.FName @Model.LName</h2>
+                        <p>@Model.Email</p>
+                        <p>Your profile information helps us make every booking quicker and more personal.</p>
+                        <div class="profile-security"><i class="fa-solid fa-shield-halved"></i><span>Your email is protected and cannot be changed from this page.</span></div>
+                    </aside>
+                </div>
+                <div class="col-lg-8">
+                    <div class="profile-form">
+                        <h3>Traveler details</h3>
+                        <p>Update the name associated with your AeroFly account.</p>
+                        <form asp-area="Identity" asp-controller="Account" asp-action="Profile" method="post">
+                            @Html.AntiForgeryToken()
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="FName" class="form-label">First name</label>
+                                    <input asp-for="FName" class="form-control" autocomplete="given-name" />
+                                    <span asp-validation-for="FName" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="LName" class="form-label">Last name</label>
+                                    <input asp-for="LName" class="form-control" autocomplete="family-name" />
+                                    <span asp-validation-for="LName" class="text-danger small"></span>
+                                </div>
+                                <div class="col-12 mt-4">
+                                    <label asp-for="Email" class="form-label">Email address</label>
+                                    <input asp-for="Email" class="form-control" readonly />
+                                    <span class="field-note"><i class="fa-solid fa-lock"></i>Email changes require account verification and are not available here.</span>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end mt-4 pt-2">
+                                <button type="submit" class="btn btn-brand px-4"><i class="fa-solid fa-check me-2"></i>Save changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

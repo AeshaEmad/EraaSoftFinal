@@ -1,0 +1,99 @@
+﻿@model AirportVM
+@{
+    ViewData["Title"] = "Add New Airport";
+}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-plus-circle me-2"></i> Add New Airport
+                </h3>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2"></div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group mb-3">
+                                <label asp-for="Name" class="form-label"></label>
+                                <input asp-for="Name" class="form-control" placeholder="e.g. Cairo International Airport" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label asp-for="IataCode" class="form-label"></label>
+                                <input asp-for="IataCode" class="form-control text-uppercase" placeholder="CAI" maxlength="3" />
+                                <span asp-validation-for="IataCode" class="text-danger"></span>
+                                <small class="text-muted">3-letter IATA code</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="City" class="form-label"></label>
+                                <input asp-for="City" class="form-control" placeholder="e.g. Cairo" />
+                                <span asp-validation-for="City" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Country" class="form-label"></label>
+                                <input asp-for="Country" class="form-control" placeholder="e.g. Egypt" />
+                                <span asp-validation-for="Country" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Latitude" class="form-label"></label>
+                                <input asp-for="Latitude" class="form-control" placeholder="e.g. 30.0444" step="any" />
+                                <span asp-validation-for="Latitude" class="text-danger"></span>
+                                <small class="text-muted">Range: -90 to 90</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Longitude" class="form-label"></label>
+                                <input asp-for="Longitude" class="form-control" placeholder="e.g. 31.2357" step="any" />
+                                <span asp-validation-for="Longitude" class="text-danger"></span>
+                                <small class="text-muted">Range: -180 to 180</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Back to List
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Save Airport
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Auto uppercase IATA code
+        document.getElementById('IataCode')?.addEventListener('input', function() {
+            this.value = this.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3);
+        });
+    </script>
+}

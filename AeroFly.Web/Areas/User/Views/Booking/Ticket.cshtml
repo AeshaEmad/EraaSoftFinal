@@ -1,0 +1,347 @@
+﻿@model BookingConfirmationVM
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Ticket - @Model.PNR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #fff;
+            padding: 20px;
+        }
+
+        .ticket {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            border: 2px solid #1a3a6b;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .ticket-header {
+            background: linear-gradient(135deg, #0a1628 0%, #1a3a6b 100%);
+            padding: 25px 30px;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .ticket-header h1 {
+                font-size: 28px;
+                font-weight: 700;
+            }
+
+            .ticket-header .pnr {
+                font-size: 24px;
+                font-weight: 700;
+                color: #4da6ff;
+                letter-spacing: 4px;
+                font-family: monospace;
+            }
+
+        .ticket-body {
+            padding: 30px;
+        }
+
+        .flight-route {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 0;
+            border-bottom: 2px dashed #e9ecef;
+        }
+
+            .flight-route .city {
+                text-align: center;
+                flex: 1;
+            }
+
+                .flight-route .city .time {
+                    font-size: 32px;
+                    font-weight: 700;
+                    color: #1a1a2e;
+                }
+
+                .flight-route .city .name {
+                    font-size: 18px;
+                    font-weight: 600;
+                }
+
+                .flight-route .city .airport {
+                    font-size: 14px;
+                    color: #6c757d;
+                }
+
+                .flight-route .city .iata {
+                    font-size: 12px;
+                    color: #6c757d;
+                }
+
+            .flight-route .arrow {
+                padding: 0 20px;
+                color: #0d6efd;
+                font-size: 28px;
+            }
+
+            .flight-route .duration {
+                text-align: center;
+                padding: 0 15px;
+            }
+
+                .flight-route .duration .label {
+                    font-size: 12px;
+                    color: #6c757d;
+                }
+
+                .flight-route .duration .value {
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #0d6efd;
+                    background: #e9ecef;
+                    padding: 4px 16px;
+                    border-radius: 20px;
+                }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+            .details-grid .item .label {
+                font-size: 12px;
+                color: #6c757d;
+                text-transform: uppercase;
+                font-weight: 600;
+            }
+
+            .details-grid .item .value {
+                font-size: 16px;
+                font-weight: 600;
+                color: #1a1a2e;
+            }
+
+        .passengers-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+            .passengers-table th {
+                background: #0a1628;
+                color: #fff;
+                padding: 10px 12px;
+                text-align: left;
+            }
+
+            .passengers-table td {
+                padding: 8px 12px;
+                border-bottom: 1px solid #e9ecef;
+            }
+
+            .passengers-table tr:nth-child(even) {
+                background: #f8f9fa;
+            }
+
+        .ticket-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 2px solid #e9ecef;
+        }
+
+            .ticket-footer .qr-code {
+                width: 120px;
+                height: 120px;
+            }
+
+                .ticket-footer .qr-code img {
+                    width: 100%;
+                    height: 100%;
+                }
+
+            .ticket-footer .terms {
+                font-size: 11px;
+                color: #6c757d;
+                text-align: right;
+            }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #28a745;
+            color: #fff;
+        }
+
+        .badge-warning {
+            background: #ffc107;
+            color: #1a1a2e;
+        }
+
+        .badge-danger {
+            background: #dc3545;
+            color: #fff;
+        }
+
+        .badge-info {
+            background: #17a2b8;
+            color: #fff;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-3 {
+            margin-top: 15px;
+        }
+
+        .mb-3 {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="ticket">
+        <!-- Header -->
+        <div class="ticket-header">
+            <div>
+                <h1>✈️ AeroFly</h1>
+                <p style="opacity:0.8; font-size:14px;">Boarding Pass</p>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:12px; opacity:0.7;">PNR</div>
+                <div class="pnr">@Model.PNR</div>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="ticket-body">
+            <!-- Flight Route -->
+            <div class="flight-route">
+                <div class="city">
+                    <div class="time">@Model.DepartureTime.ToString("HH:mm")</div>
+                    <div class="name">@Model.DepartureCity</div>
+                    <div class="airport">@Model.DepartureIata</div>
+                </div>
+                <div class="arrow">✈️</div>
+                <div class="city">
+                    <div class="time">@Model.ArrivalTime.ToString("HH:mm")</div>
+                    <div class="name">@Model.ArrivalCity</div>
+                    <div class="airport">@Model.ArrivalIata</div>
+                </div>
+            </div>
+
+            <!-- Flight Info -->
+            <div class="details-grid">
+                <div class="item">
+                    <div class="label">Flight</div>
+                    <div class="value">@Model.FlightNumber</div>
+                </div>
+                <div class="item">
+                    <div class="label">Date</div>
+                    <div class="value">@Model.DepartureTime.ToString("dd MMM yyyy")</div>
+                </div>
+                <div class="item">
+                    <div class="label">Seat Class</div>
+                    <div class="value">@Model.SeatClass</div>
+                </div>
+                <div class="item">
+                    <div class="label">Status</div>
+                    <div class="value">
+                        <span class="badge badge-success">@Model.Status</span>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="label">Passengers</div>
+                    <div class="value">@Model.PassengerCount</div>
+                </div>
+                <div class="item">
+                    <div class="label">Total Price</div>
+                    <div class="value" style="color:#0d6efd;">$@Model.TotalPrice.ToString("N2")</div>
+                </div>
+            </div>
+
+            <!-- Passengers -->
+            <h4 style="margin-bottom:10px;">👤 Passengers</h4>
+            <table class="passengers-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Full Name</th>
+                        <th>Passport</th>
+                        <th>Age</th>
+                        <th>Seat</th>
+                        <th>Passenger QR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Passengers.Count; i++)
+                    {
+                        var p = Model.Passengers[i];
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>@p.FullName</td>
+                            <td>@p.PassportNumber</td>
+                            <td>@p.Age</td>
+                            <td>@p.SeatNumber</td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(p.TicketToken))
+                                {
+                                    var qrUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=120x120&data={Uri.EscapeDataString(p.TicketToken)}";
+                                    <img src="@qrUrl" width="80" height="80" alt="QR for @p.FullName" />
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- Footer -->
+            <div style="text-align:center; margin-top:15px; font-size:12px; color:#6c757d;">
+                <p>Please arrive at the airport at least 2 hours before departure.</p>
+                <p>Boarding closes 30 minutes before departure.</p>
+            </div>
+        </div>
+
+        <!-- Footer with QR Code -->
+        <div class="ticket-footer">
+            <div>
+                <div style="font-weight:600; font-size:14px; color:#1a3a6b;">AeroFly</div>
+                <div style="font-size:12px; color:#6c757d;">Flight Reservation System</div>
+            </div>
+            <div class="terms">
+                <div>Booking Reference</div>
+                <div style="font-weight:700; font-size:16px; color:#0a1628;">@Model.PNR</div>
+                <div style="margin-top:5px;">© 2025 AeroFly</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

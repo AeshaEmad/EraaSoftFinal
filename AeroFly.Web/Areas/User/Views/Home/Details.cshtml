@@ -1,0 +1,254 @@
+﻿@model FlightDetailsVM
+@{
+    ViewData["Title"] = "Flight Details";
+    var passengers = ViewBag.Passengers ?? 1;
+}
+
+<section class="details-section py-4">
+    <div class="container">
+        <!-- Back -->
+        <div class="mb-4">
+            <a href="javascript:history.back()" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Results
+            </a>
+        </div>
+
+        <!-- Flight Summary -->
+        <div class="flight-summary-card mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center">
+                        <span class="flight-number-display">@Model.FlightNum</span>
+                        <span class="badge bg-@(Model.IsAvailable ? "success" : "danger") ms-3">
+                            @(Model.IsAvailable ? "Available" : "Full")
+                        </span>
+                        <span class="badge bg-@(Model.Status == "Scheduled" ? "info" : "warning") ms-2">
+                            @Model.Status
+                        </span>
+                    </div>
+
+                    <div class="route-display-large mt-3">
+                        <div class="departure-large">
+                            <div class="time-large">@Model.DepartureTime.ToString("HH:mm")</div>
+                            <div class="city-large">@Model.DepartureCity</div>
+                            <div class="airport-large">@Model.DepartureAirportName</div>
+                            <div class="iata-large">@Model.DepartureIata</div>
+                        </div>
+
+                        <div class="flight-line-large">
+                            <div class="duration-large">@Model.DurationHours</div>
+                            <div class="date-large">@Model.DepartureTime.ToString("dd MMM yyyy")</div>
+                        </div>
+
+                        <div class="arrival-large">
+                            <div class="time-large">@Model.ArrivalTime.ToString("HH:mm")</div>
+                            <div class="city-large">@Model.ArrivalCity</div>
+                            <div class="airport-large">@Model.ArrivalAirportName</div>
+                            <div class="iata-large">@Model.ArrivalIata</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 text-center">
+                    <div class="price-display">
+                        <small class="text-muted">Price per passenger</small>
+                        <div class="price-large">$@Model.BasePrice.ToString("N0")</div>
+                        <small class="text-muted">@passengers passenger(s)</small>
+                        <div class="total-price">
+                            Total: $@((Model.BasePrice * passengers).ToString("N0"))
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seat Classes -->
+        <h4 class="mb-3">Select Seat Class</h4>
+        <div class="row">
+            @foreach (var seatClass in Model.SeatClasses)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="seat-class-card">
+                        <div class="seat-class-header">
+                            <h5>@seatClass.ClassName</h5>
+                            <span class="badge bg-@(seatClass.AvailableSeats > 0 ? "success" : "danger")">
+                                @seatClass.AvailableSeats seats left
+                            </span>
+                        </div>
+                        <div class="seat-class-body">
+                            <p class="text-muted">@seatClass.Description</p>
+                            <div class="price-tag">
+                                $@seatClass.Price.ToString("N0")
+                                <small>/ passenger</small>
+                            </div>
+                        </div>
+                        <div class="seat-class-footer">
+                            @if (seatClass.AvailableSeats >= passengers)
+                            {
+                                <a href="/User/Booking/Create?flightId=@Model.FlightId&classId=@seatClass.ClassId&passengers=@passengers"
+                                   class="btn btn-primary w-100">
+                                    <i class="fas fa-check me-2"></i> Select @seatClass.ClassName
+                                </a>
+                            }
+                            else
+                            {
+                                <button class="btn btn-secondary w-100" disabled>
+                                    <i class="fas fa-times me-2"></i> Not Enough Seats
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <style>
+        .details-section {
+            background: #f8f9fa;
+            min-height: 80vh;
+        }
+
+        .flight-summary-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .flight-number-display {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0d6efd;
+        }
+
+        .route-display-large {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+        }
+
+        .departure-large, .arrival-large {
+            text-align: center;
+            flex: 1;
+        }
+
+        .time-large {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+
+        .city-large {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .airport-large {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .iata-large {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .flight-line-large {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1.5;
+            padding: 0 20px;
+        }
+
+        .duration-large {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0d6efd;
+            background: #e9ecef;
+            padding: 4px 16px;
+            border-radius: 20px;
+        }
+
+        .date-large {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .price-display {
+            padding: 15px;
+        }
+
+        .price-large {
+            font-size: 42px;
+            font-weight: 700;
+            color: #0d6efd;
+        }
+
+        .total-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-top: 5px;
+        }
+
+        .seat-class-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+            .seat-class-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            }
+
+        .seat-class-header {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .seat-class-header h5 {
+                margin: 0;
+                font-weight: 700;
+            }
+
+        .seat-class-body {
+            padding: 20px;
+        }
+
+            .seat-class-body p {
+                font-size: 14px;
+                margin-bottom: 15px;
+            }
+
+        .price-tag {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0d6efd;
+        }
+
+            .price-tag small {
+                font-size: 14px;
+                font-weight: 400;
+                color: #6c757d;
+            }
+
+        .seat-class-footer {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+    </style>
+}

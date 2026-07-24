@@ -1,0 +1,16 @@
+@{
+    ViewData["Title"] = "Verify ticket";
+}
+
+<div class="card">
+    <div class="card-body">
+        <h2>Scan / verify ticket</h2>
+        <p class="text-muted">Scan the passenger QR or paste its verification token.</p>
+        <form asp-action="Verify" method="post" onsubmit="return confirm('Mark this ticket as used?')">
+            <div class="input-group">
+                <input name="token" class="form-control" autocomplete="off" required autofocus />
+                <button class="btn btn-primary" type="submit">Verify and check in</button>
+            </div>
+        </form>
+    </div>
+</div>

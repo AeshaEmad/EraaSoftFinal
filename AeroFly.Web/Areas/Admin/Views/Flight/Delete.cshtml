@@ -1,0 +1,85 @@
+﻿@model FlightVM
+@{
+    ViewData["Title"] = "Delete Flight";
+}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h3 class="card-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Delete Flight
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Are you sure you want to delete this flight?</strong>
+                    <p class="mt-2 mb-0">This action cannot be undone.</p>
+                </div>
+
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-3 text-muted">Flight Number</dt>
+                            <dd class="col-sm-9">
+                                <span class="badge bg-primary">@Model.FlightNum</span>
+                            </dd>
+
+                            <dt class="col-sm-3 text-muted">Route</dt>
+                            <dd class="col-sm-9">
+                                <strong>@Model.DepartureIataCode</strong>
+                                <i class="fas fa-arrow-right mx-1"></i>
+                                <strong>@Model.ArrivalIataCode</strong>
+                            </dd>
+
+                            <dt class="col-sm-3 text-muted">Departure</dt>
+                            <dd class="col-sm-9">
+                                @Model.DepartureTime.ToString("dd/MM/yyyy HH:mm")
+                                <br />
+                                <span class="text-muted">@Model.DepartureAirportName</span>
+                            </dd>
+
+                            <dt class="col-sm-3 text-muted">Arrival</dt>
+                            <dd class="col-sm-9">
+                                @Model.ArrivalTime.ToString("dd/MM/yyyy HH:mm")
+                                <br />
+                                <span class="text-muted">@Model.ArrivalAirportName</span>
+                            </dd>
+
+                            <dt class="col-sm-3 text-muted">Duration</dt>
+                            <dd class="col-sm-9">@Model.DurationHours</dd>
+
+                            <dt class="col-sm-3 text-muted">Available Seats</dt>
+                            <dd class="col-sm-9">@Model.AvailableSeats</dd>
+
+                            <dt class="col-sm-3 text-muted">Base Price</dt>
+                            <dd class="col-sm-9">$@Model.BasePrice.ToString("N0")</dd>
+
+                            <dt class="col-sm-3 text-muted">Status</dt>
+                            <dd class="col-sm-9">
+                                <span class="badge @(Model.Status == "Scheduled" ? "bg-info" : "bg-warning")">
+                                    @Model.Status
+                                </span>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <form asp-action="DeleteConfirmed" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.FlightId" />
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i> Confirm Delete
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

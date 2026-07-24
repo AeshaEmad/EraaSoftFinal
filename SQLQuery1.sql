@@ -1,0 +1,3 @@
+﻿BACKUP DATABASE [AeroFlyDB] 
+TO DISK = N'C:\Backups\AeroFlyDB.bak' 
+WITH NOFORMAT, NOINIT, NAME = N'AeroFlyDB-Full Database Backup', SKIP, NOREWIND, NOUNLOAD, STATS = 10;

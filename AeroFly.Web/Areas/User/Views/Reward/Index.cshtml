@@ -1,0 +1,63 @@
+@model RewardViewModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<SharedResource> L
+@{
+    ViewData["Title"] = L["Rewards"];
+    var availableDiscount = Model.PointsBalance / 100 * 10;
+}
+
+<section class="account-page">
+    <div class="container">
+        <div class="page-intro">
+            <div class="page-intro-copy"><div class="eyebrow">@L["AeroFly Rewards"]</div><h1>@L["Your travel goes further"]</h1><p>@L["Track every point you earn and turn your journeys into savings."]</p></div>
+            <a asp-area="User" asp-controller="Home" asp-action="Index" class="btn btn-brand"><i class="fa-solid fa-plane me-2"></i>@L["Earn more points"]</a>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-8">
+                <div class="reward-hero h-100">
+                    <div class="reward-balance-label"><i class="fa-solid fa-star me-2"></i>@L["Available balance"]</div>
+                    <div class="reward-points">@Model.PointsBalance.ToString("N0") <small>@L["points"]</small></div>
+                    <p class="mb-0 text-white-50">@L["Ready to use on your next eligible booking."]</p>
+                    <div class="reward-value"><i class="fa-solid fa-wallet"></i>@L["Worth {0} in travel discount", $"${availableDiscount:N0}"]</div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="reward-rule">
+                    <span class="reward-rule-icon"><i class="fa-solid fa-gift"></i></span>
+                    <h3>@L["Simple, valuable rewards"]</h3>
+                    <p>@L["Every 100 points gives you $10 off. Redeem your balance while completing your next booking."]</p>
+                    <div class="progress" style="height: 7px;"><div class="progress-bar" role="progressbar" style="width: @(Math.Min(Model.PointsBalance % 100, 100))%"></div></div>
+                    <small class="d-block mt-2 text-muted">@L["{0} points until your next $10", 100 - (Model.PointsBalance % 100)]</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="account-panel">
+            <div class="panel-header"><div><h2>@L["Points activity"]</h2><p>@L["A clear record of points earned and redeemed"]</p></div><span class="soft-badge bg-primary">@Model.Transactions.Count</span></div>
+            @if (Model.Transactions.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table account-table">
+                        <thead><tr><th>@L["Date"]</th><th>@L["Description"]</th><th>@L["Activity"]</th><th class="text-end">@L["points"]</th></tr></thead>
+                        <tbody>
+                            @foreach (var transaction in Model.Transactions)
+                            {
+                                <tr>
+                                    <td><span class="d-block fw-semibold">@transaction.Date.ToString("dd MMM yyyy")</span><small class="text-muted">@transaction.Date.ToString("HH:mm")</small></td>
+                                    <td class="fw-semibold">@transaction.Description</td>
+                                    <td><span class="soft-badge bg-@transaction.TypeColor"><i class="fa-solid @transaction.TypeIcon"></i>@transaction.Type</span></td>
+                                    <td class="text-end"><span class="transaction-points @(transaction.Points > 0 ? "text-success" : "text-danger")">@(transaction.Points > 0 ? "+" : "")@transaction.Points</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state border-0 shadow-none"><span class="empty-icon"><i class="fa-solid fa-star"></i></span><h3>@L["No points activity yet"]</h3><p>@L["Book your first flight and your reward history will appear here."]</p></div>
+            }
+        </div>
+    </div>
+</section>

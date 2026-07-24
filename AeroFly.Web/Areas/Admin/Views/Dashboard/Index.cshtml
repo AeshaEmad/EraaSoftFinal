@@ -1,0 +1,60 @@
+@model DashboardVM
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<SharedResource> L
+@{
+    ViewData["Title"] = L["Dashboard"];
+}
+
+<div class="dashboard-welcome">
+    <div><span class="welcome-icon"><i class="fa-solid fa-chart-line"></i></span><div><h2>@L["Operations at a glance"]</h2><p>@L["Monitor the most important AeroFly activity from one clear overview."]</p></div></div>
+    <a asp-area="Admin" asp-controller="Flight" asp-action="Create" class="btn btn-primary"><i class="fa-solid fa-plus me-2"></i>@L["Add flight"]</a>
+</div>
+
+<div class="row g-4 admin-stat-grid">
+    <div class="col-sm-6 col-xl-3">
+        <a asp-area="Admin" asp-controller="Flight" asp-action="Index" class="admin-stat-card stat-blue">
+            <div class="stat-top"><span class="stat-icon"><i class="fa-solid fa-plane"></i></span><i class="fa-solid fa-arrow-up-right-from-square stat-link-icon"></i></div>
+            <div class="stat-value">@Model.TotalFlights</div><div class="stat-label">@L["Total flights"]</div><div class="stat-foot">@L["Manage flight inventory"] <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a asp-area="Admin" asp-controller="Booking" asp-action="Index" class="admin-stat-card stat-green">
+            <div class="stat-top"><span class="stat-icon"><i class="fa-solid fa-ticket"></i></span><i class="fa-solid fa-arrow-up-right-from-square stat-link-icon"></i></div>
+            <div class="stat-value">@Model.TotalBookings</div><div class="stat-label">@L["Total bookings"]</div><div class="stat-foot">@L["Review reservations"] <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a asp-area="Admin" asp-controller="User" asp-action="Index" class="admin-stat-card stat-violet">
+            <div class="stat-top"><span class="stat-icon"><i class="fa-solid fa-users"></i></span><i class="fa-solid fa-arrow-up-right-from-square stat-link-icon"></i></div>
+            <div class="stat-value">@Model.ActiveUsers</div><div class="stat-label">@L["Active users"]</div><div class="stat-foot">@L["Customer accounts"] <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a asp-area="Admin" asp-controller="Payment" asp-action="Index" class="admin-stat-card stat-orange">
+            <div class="stat-top"><span class="stat-icon"><i class="fa-solid fa-wallet"></i></span><i class="fa-solid fa-arrow-up-right-from-square stat-link-icon"></i></div>
+            <div class="stat-value stat-currency">$@Model.Revenue.ToString("N2")</div><div class="stat-label">@L["Completed revenue"]</div><div class="stat-foot">@L["Payment records"] <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <div class="col-lg-8">
+        <div class="admin-surface quick-actions-panel">
+            <div class="surface-heading"><div><h3>@L["Quick actions"]</h3><p>@L["Jump directly into common operational tasks."]</p></div></div>
+            <div class="quick-actions-grid">
+                <a asp-area="Admin" asp-controller="Flight" asp-action="Create"><i class="fa-solid fa-plane-circle-plus"></i><span><strong>@L["Schedule flight"]</strong><small>@L["Add a new route to inventory"]</small></span><i class="fa-solid fa-chevron-right"></i></a>
+                <a asp-area="Admin" asp-controller="Airport" asp-action="Create"><i class="fa-solid fa-location-dot"></i><span><strong>@L["Add airport"]</strong><small>@L["Expand available destinations"]</small></span><i class="fa-solid fa-chevron-right"></i></a>
+                <a asp-area="Admin" asp-controller="Booking" asp-action="Index"><i class="fa-solid fa-ticket"></i><span><strong>@L["Review bookings"]</strong><small>@L["Manage customer reservations"]</small></span><i class="fa-solid fa-chevron-right"></i></a>
+                <a asp-area="Admin" asp-controller="User" asp-action="Index"><i class="fa-solid fa-user-gear"></i><span><strong>@L["Manage users"]</strong><small>@L["Review customer accounts"]</small></span><i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="admin-surface system-card">
+            <div class="system-status"><span></span>@L["System operational"]</div>
+            <div class="system-illustration"><i class="fa-solid fa-shield-halved"></i></div>
+            <h3>@L["Everything looks good"]</h3><p>@L["Core administration services are available and ready for your team."]</p>
+            <div class="system-row"><span>@L["Database"]</span><strong>@L["Connected"]</strong></div><div class="system-row"><span>@L["Environment"]</span><strong>@L["Development"]</strong></div>
+        </div>
+    </div>
+</div>

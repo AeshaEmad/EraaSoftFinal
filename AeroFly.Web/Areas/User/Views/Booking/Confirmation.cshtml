@@ -1,0 +1,85 @@
+﻿@model BookingConfirmationVM
+@{
+    ViewData["Title"] = "Booking Confirmation";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto text-center">
+            <div class="card border-success">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 64px;"></i>
+                    </div>
+                    <h2 class="text-success">Booking Confirmed! 🎉</h2>
+                    <p class="lead">Your flight has been booked successfully.</p>
+
+                    <div class="alert alert-info mt-4">
+                        <strong>PNR:</strong> @Model.PNR
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Flight Details</h5>
+                        </div>
+                        <div class="card-body text-start">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Flight:</strong> @Model.FlightNumber
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Route:</strong> @Model.Route
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Departure:</strong> @Model.DepartureTime.ToString("dd MMM yyyy HH:mm")
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Arrival:</strong> @Model.ArrivalTime.ToString("dd MMM yyyy HH:mm")
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Passengers:</strong> @Model.PassengerCount
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Total Price:</strong> <span class="fw-bold text-success">$@Model.TotalPrice.ToString("N2")</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Status:</strong> <span class="badge bg-success">@Model.Status</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Passengers</h5>
+                        </div>
+                        <div class="card-body text-start">
+                            @foreach (var passenger in Model.Passengers)
+                            {
+                                <div class="border-bottom py-2">
+                                    <strong>@passenger.FullName</strong>
+                                    <span class="text-muted ms-3">Passport: @passenger.PassportNumber</span>
+                                    <span class="text-muted ms-3">Age: @passenger.Age</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        
+                        <a asp-area="User" asp-controller="Booking" asp-action="DownloadTicket"
+                           asp-route-id="@Model.BookingId" class="btn btn-primary">
+                            <i class="fas fa-file-pdf me-2"></i> Download Ticket (PDF)
+                        </a>
+                        <a asp-area="User" asp-controller="Booking" asp-action="MyBookings" class="btn btn-outline-secondary ms-2">
+                            <i class="fas fa-ticket-alt me-1"></i> My Bookings
+                        </a>
+                        <a asp-area="User" asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary ms-2">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

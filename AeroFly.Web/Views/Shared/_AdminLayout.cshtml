@@ -1,0 +1,126 @@
+@using System.Globalization
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<SharedResource> L
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "Dashboard";
+    string ActiveFor(string controller) => currentController.Equals(controller, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+    var isArabic = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar";
+}
+<!DOCTYPE html>
+<html lang="@(isArabic ? "ar" : "en")" dir="@(isArabic ? "rtl" : "ltr")">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#081a32" />
+    <title>@ViewData["Title"] | AeroFly Admin</title>
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" asp-append-version="true" />
+    <link rel="icon" type="image/png" sizes="32x32" href="~/images/favicon-32x32.png" asp-append-version="true" />
+    <link rel="icon" type="image/png" sizes="16x16" href="~/images/favicon-16x16.png" asp-append-version="true" />
+    <link rel="apple-touch-icon" sizes="180x180" href="~/images/apple-touch-icon.png" asp-append-version="true" />
+    <link rel="manifest" href="~/site.webmanifest" asp-append-version="true" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="~/lib/adminlte/css/adminlte.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    @if (isArabic)
+    {
+        <link rel="stylesheet" href="~/css/rtl.css" asp-append-version="true" />
+    }
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="hold-transition sidebar-mini layout-fixed admin-body">
+    <div class="wrapper">
+        <nav class="main-header navbar navbar-expand admin-topbar">
+            <ul class="navbar-nav align-items-center">
+                <li class="nav-item"><button class="sidebar-toggle" data-widget="pushmenu" type="button" aria-label="Toggle sidebar"><i class="fa-solid fa-bars-staggered"></i></button></li>
+                <li class="nav-item d-none d-md-block">
+                    <div class="topbar-context"><small>@L["AeroFly control center"]</small><strong>@ViewData["Title"]</strong></div>
+                </li>
+            </ul>
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item">
+                    <form asp-area="" asp-controller="Localization" asp-action="SetLanguage" method="post">
+                        <input type="hidden" name="culture" value="@(isArabic ? "en" : "ar")" />
+                        <input type="hidden" name="returnUrl" value="@($"{Context.Request.Path}{Context.Request.QueryString}")" />
+                        <button class="view-site-link border-0 bg-transparent" type="submit"><i class="fa-solid fa-globe"></i> @(isArabic ? "English" : "العربية")</button>
+                    </form>
+                </li>
+                <li class="nav-item d-none d-sm-block"><a class="view-site-link" asp-area="User" asp-controller="Home" asp-action="Index"><i class="fa-solid fa-arrow-up-right-from-square"></i> @L["View website"]</a></li>
+                <li class="nav-item dropdown">
+                    <button class="admin-profile dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="admin-avatar">A</span><span class="d-none d-md-block"><small>@L["Signed in as"]</small><strong>@(User.Identity?.Name ?? "Administrator")</strong></span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end admin-profile-menu">
+                        <div class="px-3 py-2"><small class="text-muted">@L["Administrator account"]</small><div class="fw-bold text-truncate">@User.Identity?.Name</div></div>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" asp-area="Identity" asp-controller="Account" asp-action="Profile"><i class="fa-regular fa-user"></i> @L["Profile"]</a>
+                        <form asp-area="Identity" asp-controller="Account" asp-action="Logout" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="dropdown-item text-danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> @L["Sign out"]</button>
+                        </form>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+
+        <aside class="main-sidebar admin-sidebar">
+            <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="brand-link admin-brand">
+                <span class="admin-brand-mark"><img src="~/images/aerofly-mark.png" asp-append-version="true" alt="" /></span>
+                <span class="brand-text">Aero<span>Fly</span><small>ADMIN</small></span>
+            </a>
+            <div class="sidebar">
+                <div class="workspace-label">@L["Workspace"]</div>
+                <nav>
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                        <li class="nav-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="nav-link @ActiveFor("Dashboard")"><i class="nav-icon fa-solid fa-table-cells-large"></i><p>@L["Overview"]</p></a></li>
+                        <li class="sidebar-section"><span>@L["Operations"]</span></li>
+                        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item"><a asp-area="Admin" asp-controller="Flight" asp-action="Index" class="nav-link @ActiveFor("Flight")"><i class="nav-icon fa-solid fa-plane"></i><p>@L["Flights"]</p></a></li>
+                            <li class="nav-item"><a asp-area="Admin" asp-controller="Airport" asp-action="Index" class="nav-link @ActiveFor("Airport")"><i class="nav-icon fa-solid fa-location-dot"></i><p>@L["Airports"]</p></a></li>
+                            <li class="nav-item"><a asp-area="Admin" asp-controller="Booking" asp-action="Index" class="nav-link @ActiveFor("Booking")"><i class="nav-icon fa-solid fa-ticket"></i><p>@L["Bookings"]</p></a></li>
+                            <li class="nav-item"><a asp-area="Admin" asp-controller="Payment" asp-action="Index" class="nav-link @ActiveFor("Payment")"><i class="nav-icon fa-regular fa-credit-card"></i><p>@L["Payments"]</p></a></li>
+                        }
+                        <li class="nav-item"><a asp-area="Admin" asp-controller="TicketVerification" asp-action="Scan" class="nav-link @ActiveFor("TicketVerification")"><i class="nav-icon fa-solid fa-qrcode"></i><p>@L["Verify ticket"]</p></a></li>
+                        <li class="sidebar-section"><span>@L["People"]</span></li>
+                        @if (User.IsInRole("SuperAdmin"))
+                        {
+                            <li class="nav-item"><a asp-area="Admin" asp-controller="User" asp-action="Index" class="nav-link @ActiveFor("User")"><i class="nav-icon fa-solid fa-users"></i><p>@L["Customers"]</p></a></li>
+                        }
+                    </ul>
+                </nav>
+                <div class="sidebar-help">
+                    <i class="fa-solid fa-shield-halved"></i><div><strong>@L["Secure workspace"]</strong><small>@L["Admin access protected"]</small></div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="content-wrapper admin-content-wrapper">
+            <div class="content-header admin-page-header">
+                <div class="container-fluid">
+                    <div><div class="page-kicker">@L["AeroFly administration"]</div><h1>@ViewData["Title"]</h1></div>
+                    <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">@L["Home"]</a></li><li class="breadcrumb-item active">@ViewData["Title"]</li></ol></nav>
+                </div>
+            </div>
+            <section class="content admin-content">
+                <div class="container-fluid">
+                    @await Html.PartialAsync("_FlashMessages")
+                    @RenderBody()
+                </div>
+            </section>
+        </div>
+
+        <footer class="main-footer admin-footer"><span>&copy; @DateTime.UtcNow.Year AeroFly @L["Operations"]</span><span class="float-right d-none d-sm-inline">@L["Control center v1.0"]</span></footer>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/adminlte/js/adminlte.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

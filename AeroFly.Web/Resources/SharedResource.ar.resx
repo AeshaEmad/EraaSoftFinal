@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="English" xml:space="preserve"><value>English</value></data>
+  <data name="Arabic" xml:space="preserve"><value>العربية</value></data>
+  <data name="Language" xml:space="preserve"><value>اللغة</value></data>
+  <data name="Explore flights" xml:space="preserve"><value>استكشف الرحلات</value></data>
+  <data name="My bookings" xml:space="preserve"><value>حجوزاتي</value></data>
+  <data name="Rewards" xml:space="preserve"><value>المكافآت</value></data>
+  <data name="Admin panel" xml:space="preserve"><value>لوحة الإدارة</value></data>
+  <data name="Welcome back" xml:space="preserve"><value>مرحبًا بعودتك</value></data>
+  <data name="Profile" xml:space="preserve"><value>الملف الشخصي</value></data>
+  <data name="Sign out" xml:space="preserve"><value>تسجيل الخروج</value></data>
+  <data name="Sign in" xml:space="preserve"><value>تسجيل الدخول</value></data>
+  <data name="Create account" xml:space="preserve"><value>إنشاء حساب</value></data>
+  <data name="Discover" xml:space="preserve"><value>اكتشف</value></data>
+  <data name="Search flights" xml:space="preserve"><value>ابحث عن رحلات</value></data>
+  <data name="Account" xml:space="preserve"><value>الحساب</value></data>
+  <data name="AeroFly Rewards" xml:space="preserve"><value>مكافآت AeroFly</value></data>
+  <data name="Profile settings" xml:space="preserve"><value>إعدادات الملف الشخصي</value></data>
+  <data name="Join AeroFly" xml:space="preserve"><value>انضم إلى AeroFly</value></data>
+  <data name="Fly with confidence" xml:space="preserve"><value>سافر بثقة</value></data>
+  <data name="Secure checkout" xml:space="preserve"><value>دفع آمن</value></data>
+  <data name="Journey support" xml:space="preserve"><value>دعم الرحلات</value></data>
+  <data name="All rights reserved." xml:space="preserve"><value>جميع الحقوق محفوظة.</value></data>
+  <data name="Designed for smoother journeys." xml:space="preserve"><value>صُمم لرحلات أكثر سلاسة.</value></data>
+  <data name="Travel farther, feel closer. A simpler way to search, book and manage every journey." xml:space="preserve"><value>سافر أبعد واشعر بالقرب. طريقة أسهل للبحث والحجز وإدارة كل رحلة.</value></data>
+  <data name="Your next journey starts here" xml:space="preserve"><value>رحلتك القادمة تبدأ من هنا</value></data>
+  <data name="Where will you fly next?" xml:space="preserve"><value>إلى أين ستسافر بعد ذلك؟</value></data>
+  <data name="Compare available flights, choose your perfect seat and manage the whole journey from one beautifully simple place." xml:space="preserve"><value>قارن الرحلات المتاحة واختر مقعدك المناسب وأدر رحلتك كاملة من مكان واحد بسيط.</value></data>
+  <data name="Transparent pricing" xml:space="preserve"><value>أسعار واضحة</value></data>
+  <data name="Secure booking" xml:space="preserve"><value>حجز آمن</value></data>
+  <data name="Rewards on every trip" xml:space="preserve"><value>مكافآت مع كل رحلة</value></data>
+  <data name="One way" xml:space="preserve"><value>ذهاب فقط</value></data>
+  <data name="Round trip" xml:space="preserve"><value>ذهاب وعودة</value></data>
+  <data name="From" xml:space="preserve"><value>من</value></data>
+  <data name="To" xml:space="preserve"><value>إلى</value></data>
+  <data name="Choose origin" xml:space="preserve"><value>اختر مدينة المغادرة</value></data>
+  <data name="Choose destination" xml:space="preserve"><value>اختر الوجهة</value></data>
+  <data name="Departure" xml:space="preserve"><value>المغادرة</value></data>
+  <data name="Return" xml:space="preserve"><value>العودة</value></data>
+  <data name="Travelers" xml:space="preserve"><value>المسافرون</value></data>
+  <data name="Cabin" xml:space="preserve"><value>الدرجة</value></data>
+  <data name="All classes" xml:space="preserve"><value>كل الدرجات</value></data>
+  <data name="Search" xml:space="preserve"><value>بحث</value></data>
+  <data name="Fast and effortless" xml:space="preserve"><value>سريع وسهل</value></data>
+  <data name="Book your trip in just a few steps" xml:space="preserve"><value>احجز رحلتك في خطوات قليلة</value></data>
+  <data name="Payments protected" xml:space="preserve"><value>مدفوعات محمية</value></data>
+  <data name="Your checkout is safe and secure" xml:space="preserve"><value>عملية الدفع آمنة ومحمية</value></data>
+  <data name="Travel that rewards" xml:space="preserve"><value>سفر يكافئك</value></data>
+  <data name="Earn points whenever you fly" xml:space="preserve"><value>اكسب نقاطًا كلما سافرت</value></data>
+  <data name="Available journeys" xml:space="preserve"><value>الرحلات المتاحة</value></data>
+  <data name="Flights that match your search" xml:space="preserve"><value>رحلات تطابق بحثك</value></data>
+  <data name="{0} traveler(s) · {1} result(s)" xml:space="preserve"><value>{0} مسافر · {1} نتيجة</value></data>
+  <data name="Available" xml:space="preserve"><value>متاح</value></data>
+  <data name="Sold out" xml:space="preserve"><value>نفدت المقاعد</value></data>
+  <data name="Seats remaining" xml:space="preserve"><value>المقاعد المتبقية</value></data>
+  <data name="Per traveler" xml:space="preserve"><value>لكل مسافر</value></data>
+  <data name="View flight" xml:space="preserve"><value>عرض الرحلة</value></data>
+  <data name="Not available" xml:space="preserve"><value>غير متاح</value></data>
+  <data name="No flights found yet" xml:space="preserve"><value>لم يتم العثور على رحلات</value></data>
+  <data name="Adjust your route or travel date and search again. New journeys are added regularly." xml:space="preserve"><value>عدّل المسار أو تاريخ السفر ثم ابحث مرة أخرى. تتم إضافة رحلات جديدة باستمرار.</value></data>
+  <data name="Update search" xml:space="preserve"><value>تعديل البحث</value></data>
+  <data name="Sign in to manage your flights and rewards." xml:space="preserve"><value>سجّل الدخول لإدارة رحلاتك ومكافآتك.</value></data>
+  <data name="Email Address" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Enter your email" xml:space="preserve"><value>أدخل بريدك الإلكتروني</value></data>
+  <data name="Password" xml:space="preserve"><value>كلمة المرور</value></data>
+  <data name="Forgot?" xml:space="preserve"><value>نسيت كلمة المرور؟</value></data>
+  <data name="Enter your password" xml:space="preserve"><value>أدخل كلمة المرور</value></data>
+  <data name="Remember me" xml:space="preserve"><value>تذكرني</value></data>
+  <data name="Don't have an account?" xml:space="preserve"><value>ليس لديك حساب؟</value></data>
+  <data name="Join AeroFly+" xml:space="preserve"><value>انضم إلى AeroFly+</value></data>
+  <data name="Earn points, enjoy flexible bookings, and travel in style." xml:space="preserve"><value>اكسب النقاط واستمتع بحجوزات مرنة وسفر مميز.</value></data>
+  <data name="First Name" xml:space="preserve"><value>الاسم الأول</value></data>
+  <data name="Last Name" xml:space="preserve"><value>اسم العائلة</value></data>
+  <data name="Create a strong password" xml:space="preserve"><value>أنشئ كلمة مرور قوية</value></data>
+  <data name="Already a member?" xml:space="preserve"><value>لديك حساب بالفعل؟</value></data>
+  <data name="Your journeys" xml:space="preserve"><value>رحلاتك</value></data>
+  <data name="Everything you need for your upcoming and previous trips, in one place." xml:space="preserve"><value>كل ما تحتاجه لرحلاتك القادمة والسابقة في مكان واحد.</value></data>
+  <data name="Book a new flight" xml:space="preserve"><value>احجز رحلة جديدة</value></data>
+  <data name="Booking history" xml:space="preserve"><value>سجل الحجوزات</value></data>
+  <data name="{0} reservation(s) connected to your account" xml:space="preserve"><value>{0} حجز مرتبط بحسابك</value></data>
+  <data name="{0} total" xml:space="preserve"><value>الإجمالي {0}</value></data>
+  <data name="Reference" xml:space="preserve"><value>المرجع</value></data>
+  <data name="Flight" xml:space="preserve"><value>الرحلة</value></data>
+  <data name="Route" xml:space="preserve"><value>المسار</value></data>
+  <data name="Amount" xml:space="preserve"><value>المبلغ</value></data>
+  <data name="Booking" xml:space="preserve"><value>الحجز</value></data>
+  <data name="Payment" xml:space="preserve"><value>الدفع</value></data>
+  <data name="Paid" xml:space="preserve"><value>مدفوع</value></data>
+  <data name="Pending" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="Confirmed" xml:space="preserve"><value>مؤكد</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>ملغي</value></data>
+  <data name="Completed" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="Refunded" xml:space="preserve"><value>تم الاسترداد</value></data>
+  <data name="Not paid" xml:space="preserve"><value>غير مدفوع</value></data>
+  <data name="Cancel booking" xml:space="preserve"><value>إلغاء الحجز</value></data>
+  <data name="Your suitcase is ready" xml:space="preserve"><value>حقيبتك جاهزة</value></data>
+  <data name="You do not have any bookings yet. Find your next destination and begin a new journey." xml:space="preserve"><value>ليس لديك حجوزات بعد. اختر وجهتك القادمة وابدأ رحلة جديدة.</value></data>
+  <data name="Please confirm" xml:space="preserve"><value>يرجى التأكيد</value></data>
+  <data name="Cancel this booking?" xml:space="preserve"><value>هل تريد إلغاء هذا الحجز؟</value></data>
+  <data name="Keep booking" xml:space="preserve"><value>الاحتفاظ بالحجز</value></data>
+  <data name="Confirm cancellation" xml:space="preserve"><value>تأكيد الإلغاء</value></data>
+  <data name="Your travel goes further" xml:space="preserve"><value>سفرك يمنحك المزيد</value></data>
+  <data name="Track every point you earn and turn your journeys into savings." xml:space="preserve"><value>تابع كل نقطة تكسبها وحوّل رحلاتك إلى توفير.</value></data>
+  <data name="Earn more points" xml:space="preserve"><value>اكسب المزيد من النقاط</value></data>
+  <data name="Available balance" xml:space="preserve"><value>الرصيد المتاح</value></data>
+  <data name="points" xml:space="preserve"><value>نقطة</value></data>
+  <data name="Points activity" xml:space="preserve"><value>حركة النقاط</value></data>
+  <data name="A clear record of points earned and redeemed" xml:space="preserve"><value>سجل واضح للنقاط المكتسبة والمستخدمة</value></data>
+  <data name="Date" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="Activity" xml:space="preserve"><value>العملية</value></data>
+  <data name="AeroFly control center" xml:space="preserve"><value>مركز تحكم AeroFly</value></data>
+  <data name="View website" xml:space="preserve"><value>عرض الموقع</value></data>
+  <data name="Signed in as" xml:space="preserve"><value>مسجل الدخول باسم</value></data>
+  <data name="Administrator account" xml:space="preserve"><value>حساب المدير</value></data>
+  <data name="Workspace" xml:space="preserve"><value>مساحة العمل</value></data>
+  <data name="Overview" xml:space="preserve"><value>نظرة عامة</value></data>
+  <data name="Operations" xml:space="preserve"><value>العمليات</value></data>
+  <data name="Flights" xml:space="preserve"><value>الرحلات</value></data>
+  <data name="Airports" xml:space="preserve"><value>المطارات</value></data>
+  <data name="Bookings" xml:space="preserve"><value>الحجوزات</value></data>
+  <data name="Payments" xml:space="preserve"><value>المدفوعات</value></data>
+  <data name="Verify ticket" xml:space="preserve"><value>التحقق من التذكرة</value></data>
+  <data name="People" xml:space="preserve"><value>المستخدمون</value></data>
+  <data name="Customers" xml:space="preserve"><value>العملاء</value></data>
+  <data name="Secure workspace" xml:space="preserve"><value>مساحة عمل آمنة</value></data>
+  <data name="Admin access protected" xml:space="preserve"><value>دخول الإدارة محمي</value></data>
+  <data name="AeroFly administration" xml:space="preserve"><value>إدارة AeroFly</value></data>
+  <data name="Home" xml:space="preserve"><value>الرئيسية</value></data>
+  <data name="Control center v1.0" xml:space="preserve"><value>مركز التحكم v1.0</value></data>
+  <data name="Economy" xml:space="preserve"><value>السياحية</value></data>
+  <data name="Business" xml:space="preserve"><value>رجال الأعمال</value></data>
+  <data name="First Class" xml:space="preserve"><value>الدرجة الأولى</value></data>
+  <data name="Ready to use on your next eligible booking." xml:space="preserve"><value>جاهز للاستخدام في حجزك المؤهل القادم.</value></data>
+  <data name="Worth {0} in travel discount" xml:space="preserve"><value>بقيمة {0} خصم على السفر</value></data>
+  <data name="Simple, valuable rewards" xml:space="preserve"><value>مكافآت بسيطة وقيّمة</value></data>
+  <data name="Every 100 points gives you $10 off. Redeem your balance while completing your next booking." xml:space="preserve"><value>كل 100 نقطة تمنحك خصمًا بقيمة 10 دولارات. استخدم رصيدك عند إتمام حجزك القادم.</value></data>
+  <data name="{0} points until your next $10" xml:space="preserve"><value>متبقي {0} نقطة للحصول على خصم 10 دولارات</value></data>
+  <data name="No points activity yet" xml:space="preserve"><value>لا توجد حركة نقاط بعد</value></data>
+  <data name="Book your first flight and your reward history will appear here." xml:space="preserve"><value>احجز رحلتك الأولى وسيظهر سجل مكافآتك هنا.</value></data>
+  <data name="Dashboard" xml:space="preserve"><value>لوحة التحكم</value></data>
+  <data name="Operations at a glance" xml:space="preserve"><value>نظرة سريعة على العمليات</value></data>
+  <data name="Monitor the most important AeroFly activity from one clear overview." xml:space="preserve"><value>تابع أهم أنشطة AeroFly من شاشة واحدة واضحة.</value></data>
+  <data name="Add flight" xml:space="preserve"><value>إضافة رحلة</value></data>
+  <data name="Total flights" xml:space="preserve"><value>إجمالي الرحلات</value></data>
+  <data name="Manage flight inventory" xml:space="preserve"><value>إدارة مخزون الرحلات</value></data>
+  <data name="Total bookings" xml:space="preserve"><value>إجمالي الحجوزات</value></data>
+  <data name="Review reservations" xml:space="preserve"><value>مراجعة الحجوزات</value></data>
+  <data name="Active users" xml:space="preserve"><value>المستخدمون النشطون</value></data>
+  <data name="Customer accounts" xml:space="preserve"><value>حسابات العملاء</value></data>
+  <data name="Completed revenue" xml:space="preserve"><value>الإيرادات المكتملة</value></data>
+  <data name="Payment records" xml:space="preserve"><value>سجلات الدفع</value></data>
+  <data name="Quick actions" xml:space="preserve"><value>إجراءات سريعة</value></data>
+  <data name="Jump directly into common operational tasks." xml:space="preserve"><value>انتقل مباشرة إلى المهام التشغيلية الشائعة.</value></data>
+  <data name="Schedule flight" xml:space="preserve"><value>جدولة رحلة</value></data>
+  <data name="Add a new route to inventory" xml:space="preserve"><value>إضافة مسار جديد إلى المخزون</value></data>
+  <data name="Add airport" xml:space="preserve"><value>إضافة مطار</value></data>
+  <data name="Expand available destinations" xml:space="preserve"><value>توسيع الوجهات المتاحة</value></data>
+  <data name="Review bookings" xml:space="preserve"><value>مراجعة الحجوزات</value></data>
+  <data name="Manage customer reservations" xml:space="preserve"><value>إدارة حجوزات العملاء</value></data>
+  <data name="Manage users" xml:space="preserve"><value>إدارة المستخدمين</value></data>
+  <data name="Review customer accounts" xml:space="preserve"><value>مراجعة حسابات العملاء</value></data>
+  <data name="System operational" xml:space="preserve"><value>النظام يعمل</value></data>
+  <data name="Everything looks good" xml:space="preserve"><value>كل شيء يعمل بصورة جيدة</value></data>
+  <data name="Core administration services are available and ready for your team." xml:space="preserve"><value>خدمات الإدارة الأساسية متاحة وجاهزة لفريقك.</value></data>
+  <data name="Database" xml:space="preserve"><value>قاعدة البيانات</value></data>
+  <data name="Connected" xml:space="preserve"><value>متصلة</value></data>
+  <data name="Environment" xml:space="preserve"><value>البيئة</value></data>
+  <data name="Development" xml:space="preserve"><value>التطوير</value></data>
+</root>

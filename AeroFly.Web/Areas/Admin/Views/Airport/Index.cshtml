@@ -1,0 +1,95 @@
+﻿@model List<AirportVM>
+@{
+    ViewData["Title"] = "Airports Management";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="card-title">
+                <i class="fas fa-building me-2"></i> All Airports
+            </h3>
+            <a asp-action="Create" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus me-1"></i> Add New Airport
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover table-striped" id="airportsTable">
+                    <thead>
+                        <tr>
+                            <th>IATA</th>
+                            <th>Airport Name</th>
+                            <th>City</th>
+                            <th>Country</th>
+                            <th>Coordinates</th>
+                            <th style="width: 120px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var airport in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="badge bg-primary">@airport.IataCode</span>
+                                </td>
+                                <td><strong>@airport.Name</strong></td>
+                                <td>@airport.City</td>
+                                <td>@airport.Country</td>
+                                <td>
+                                    <small>
+                                        @airport.Latitude°, @airport.Longitude°
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Edit" asp-route-id="@airport.AirportId"
+                                           class="btn btn-warning btn-sm" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@airport.AirportId"
+                                           class="btn btn-danger btn-sm" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-building fa-4x text-muted mb-3"></i>
+                <h5 class="text-muted">No airports found</h5>
+                <p class="text-muted">Click "Add New Airport" to create your first airport.</p>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Add New Airport
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Initialize DataTable for better searching/sorting
+            if ($('#airportsTable tbody tr').length > 0) {
+                $('#airportsTable').DataTable({
+                    language: {
+                        search: "Search:",
+                        lengthMenu: "Show _MENU_ entries",
+                        info: "Showing _START_ to _END_ of _TOTAL_ airports",
+                    },
+                    order: [[2, 'asc']] // Sort by City
+                });
+            }
+        });
+    </script>
+}

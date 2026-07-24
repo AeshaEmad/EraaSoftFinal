@@ -1,0 +1,178 @@
+@using System.Globalization
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<SharedResource> L
+@{
+    var currentArea = ViewContext.RouteData.Values["area"]?.ToString();
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    var isArabic = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar";
+}
+<!DOCTYPE html>
+<html lang="@(isArabic ? "ar" : "en")" dir="@(isArabic ? "rtl" : "ltr")">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07182f" />
+    <title>@ViewData["Title"] | AeroFly</title>
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" asp-append-version="true" />
+    <link rel="icon" type="image/png" sizes="32x32" href="~/images/favicon-32x32.png" asp-append-version="true" />
+    <link rel="icon" type="image/png" sizes="16x16" href="~/images/favicon-16x16.png" asp-append-version="true" />
+    <link rel="apple-touch-icon" sizes="180x180" href="~/images/apple-touch-icon.png" asp-append-version="true" />
+    <link rel="manifest" href="~/site.webmanifest" asp-append-version="true" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @if (isArabic)
+    {
+        <link rel="stylesheet" href="~/css/rtl.css" asp-append-version="true" />
+    }
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="aerofly-body">
+    <header class="site-header">
+        <nav class="navbar navbar-expand-lg" aria-label="Main navigation">
+            <div class="container">
+                <a class="navbar-brand" asp-area="User" asp-controller="Home" asp-action="Index" aria-label="AeroFly home">
+                    <img class="brand-logo-img" src="~/images/aerofly-logo-trimmed.png" asp-append-version="true" alt="" />
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavigation"
+                        aria-controls="mainNavigation" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+
+                <div class="collapse navbar-collapse" id="mainNavigation">
+                    <ul class="navbar-nav mx-auto align-items-lg-center">
+                        <li class="nav-item">
+                            <a class="nav-link @(currentArea == "User" && currentController == "Home" ? "active" : "")"
+                               asp-area="User" asp-controller="Home" asp-action="Index">@L["Explore flights"]</a>
+                        </li>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(currentArea == "User" && currentController == "Booking" ? "active" : "")"
+                                   asp-area="User" asp-controller="Booking" asp-action="MyBookings">@L["My bookings"]</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentArea == "User" && currentController == "Reward" ? "active" : "")"
+                                   asp-area="User" asp-controller="Reward" asp-action="Index">@L["Rewards"]</a>
+                            </li>
+                        }
+                    </ul>
+
+                    <div class="navbar-actions d-flex align-items-center gap-2">
+                        <form asp-area="" asp-controller="Localization" asp-action="SetLanguage" method="post" class="language-switcher">
+                            <input type="hidden" name="culture" value="@(isArabic ? "en" : "ar")" />
+                            <input type="hidden" name="returnUrl" value="@($"{Context.Request.Path}{Context.Request.QueryString}")" />
+                            <button type="submit" class="btn btn-sm btn-ghost" aria-label="@L["Language"]">
+                                <i class="fa-solid fa-globe"></i> @(isArabic ? "English" : "العربية")
+                            </button>
+                        </form>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                            {
+                                <a class="nav-admin-link" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                                    <i class="fa-solid fa-table-cells-large"></i> @L["Admin panel"]
+                                </a>
+                            }
+                            <div class="dropdown">
+                                <button class="profile-trigger dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="profile-avatar">@((User.Identity?.Name ?? "U").Substring(0, 1).ToUpperInvariant())</span>
+                                    <span class="profile-copy d-none d-xl-block">
+                                        <small>@L["Welcome back"]</small>
+                                        <strong>@User.Identity?.Name</strong>
+                                    </span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end profile-menu">
+                                    <li>
+                                        <a class="dropdown-item @(currentArea == "Identity" && currentAction == "Profile" ? "active" : "")"
+                                           asp-area="Identity" asp-controller="Account" asp-action="Profile">
+                                            <i class="fa-regular fa-user"></i> @L["Profile"]
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <form asp-area="Identity" asp-controller="Account" asp-action="Logout" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fa-solid fa-arrow-right-from-bracket"></i> @L["Sign out"]
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <a class="btn btn-ghost" asp-area="Identity" asp-controller="Account" asp-action="Login">@L["Sign in"]</a>
+                            <a class="btn btn-brand" asp-area="Identity" asp-controller="Account" asp-action="Register">@L["Create account"]</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="site-main">
+        <div class="container flash-container">
+            @await Html.PartialAsync("_FlashMessages")
+        </div>
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-main">
+                <div class="footer-brand-block">
+                    <a class="navbar-brand footer-logo" asp-area="User" asp-controller="Home" asp-action="Index">
+                        <span class="brand-mark brand-mark-image"><img src="~/images/aerofly-mark.png" asp-append-version="true" alt="" /></span>
+                        <span>Aero<span>Fly</span></span>
+                    </a>
+                    <p>@L["Travel farther, feel closer. A simpler way to search, book and manage every journey."]</p>
+                </div>
+                <div class="footer-links">
+                    <div>
+                        <h6>@L["Discover"]</h6>
+                        <a asp-area="User" asp-controller="Home" asp-action="Index">@L["Search flights"]</a>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a asp-area="User" asp-controller="Booking" asp-action="MyBookings">@L["My bookings"]</a>
+                        }
+                    </div>
+                    <div>
+                        <h6>@L["Account"]</h6>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a asp-area="User" asp-controller="Reward" asp-action="Index">@L["AeroFly Rewards"]</a>
+                            <a asp-area="Identity" asp-controller="Account" asp-action="Profile">@L["Profile settings"]</a>
+                        }
+                        else
+                        {
+                            <a asp-area="Identity" asp-controller="Account" asp-action="Login">@L["Sign in"]</a>
+                            <a asp-area="Identity" asp-controller="Account" asp-action="Register">@L["Join AeroFly"]</a>
+                        }
+                    </div>
+                    <div>
+                        <h6>@L["Fly with confidence"]</h6>
+                        <span><i class="fa-solid fa-shield-halved"></i> @L["Secure checkout"]</span>
+                        <span><i class="fa-solid fa-headset"></i> @L["Journey support"]</span>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>&copy; @DateTime.UtcNow.Year AeroFly. @L["All rights reserved."]</span>
+                <span>@L["Designed for smoother journeys."]</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
