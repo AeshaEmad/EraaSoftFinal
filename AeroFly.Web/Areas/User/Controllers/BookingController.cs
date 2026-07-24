@@ -62,7 +62,7 @@ public class BookingController : Controller
             return RedirectToAction("Index", "Home");
         }
 
-        if ((flight.Status != "Scheduled" && flight.Status != "Delayed") || flight.DepartureTime <= DateTime.Now)
+        if ((flight.Status != "Scheduled" && flight.Status != "Delayed") || flight.DepartureTime <= DateTime.UtcNow)
         {
             TempData["Error"] = "This flight is not available for booking.";
             return RedirectToAction("Index", "Home");
@@ -150,7 +150,7 @@ public class BookingController : Controller
         }
 
         if ((flightEntity.Status != "Scheduled" && flightEntity.Status != "Delayed") ||
-            flightEntity.DepartureTime <= DateTime.Now)
+            flightEntity.DepartureTime <= DateTime.UtcNow)
         {
             TempData["Error"] = "This flight is not available for booking.";
             return RedirectToAction("Index", "Home");
@@ -170,7 +170,7 @@ public class BookingController : Controller
         {
             UserId = userId,
             FlightId = model.FlightId,
-            BookingDate = DateTime.Now,
+            BookingDate = DateTime.UtcNow,
             Status = "Pending",
             TotalPrice = (seatClassEntity.FinalPrice * model.PassengerCount),
             DiscountApplied = false,
@@ -210,7 +210,7 @@ public class BookingController : Controller
             Amount = booking.TotalPrice,
             PayMethod = "CreditCard",
             PayStatus = "Pending",
-            PayDate = DateTime.Now,
+            PayDate = DateTime.UtcNow,
             TransactionRef = Guid.NewGuid().ToString()
         };
 
@@ -228,7 +228,9 @@ public class BookingController : Controller
     [HttpGet]
     public async Task<IActionResult> Payment(int bookingId)
     {
-        await _bookingWorkflow.ReleaseExpiredHoldAsync(bookingId);
+        try { await _bookingWorkflow.ReleaseExpiredHoldAsync(bookingId); }
+        catch { /* Background cleanup failure should not block payment */ }
+
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var booking = await _context.Bookings
             .Include(b => b.Flight)
@@ -255,40 +257,55 @@ public class BookingController : Controller
         Stripe.PaymentIntent? paymentIntent = null;
         if (booking.Payment != null && booking.Payment.TransactionRef.StartsWith("pi_", StringComparison.Ordinal))
         {
-            var existingIntent = await _stripeService.GetPaymentIntentAsync(booking.Payment.TransactionRef);
-            var matchesBooking = existingIntent.Metadata.TryGetValue("booking_id", out var intentBookingId) &&
-                                 intentBookingId == booking.BookingId.ToString() &&
-                                 existingIntent.Metadata.TryGetValue("user_id", out var intentUserId) &&
-                                 intentUserId == booking.UserId.ToString() &&
-                                 existingIntent.Amount == (long)(booking.TotalPrice * 100) &&
-                                 string.Equals(existingIntent.Currency, "usd", StringComparison.OrdinalIgnoreCase) &&
-                                 existingIntent.Status != "canceled";
-
-            if (matchesBooking)
+            try
             {
-                if (existingIntent.Status == "succeeded")
+                var existingIntent = await _stripeService.GetPaymentIntentAsync(booking.Payment.TransactionRef);
+                var matchesBooking = existingIntent.Metadata.TryGetValue("booking_id", out var intentBookingId) &&
+                                     intentBookingId == booking.BookingId.ToString() &&
+                                     existingIntent.Metadata.TryGetValue("user_id", out var intentUserId) &&
+                                     intentUserId == booking.UserId.ToString() &&
+                                     existingIntent.Amount == (long)(booking.TotalPrice * 100) &&
+                                     string.Equals(existingIntent.Currency, "usd", StringComparison.OrdinalIgnoreCase) &&
+                                     existingIntent.Status != "canceled";
+
+                if (matchesBooking)
                 {
-                    await _bookingWorkflow.ConfirmPaidBookingAsync(
-                        booking.BookingId,
-                        existingIntent.Id,
-                        existingIntent.Amount / 100m);
-                    return RedirectToAction("Confirmation", new { bookingId });
+                    if (existingIntent.Status == "succeeded")
+                    {
+                        await _bookingWorkflow.ConfirmPaidBookingAsync(
+                            booking.BookingId,
+                            existingIntent.Id,
+                            existingIntent.Amount / 100m);
+                        return RedirectToAction("Confirmation", new { bookingId });
+                    }
+                    paymentIntent = existingIntent;
                 }
-                paymentIntent = existingIntent;
+            }
+            catch
+            {
+                // Stripe API failure - will create a new payment intent below
             }
         }
 
         if (paymentIntent == null)
         {
-            paymentIntent = await _stripeService.CreatePaymentIntentAsync(
-                booking.TotalPrice,
-                booking.BookingId,
-                booking.UserId);
-
-            if (booking.Payment != null)
+            try
             {
-                booking.Payment.TransactionRef = paymentIntent.Id;
-                await _context.SaveChangesAsync();
+                paymentIntent = await _stripeService.CreatePaymentIntentAsync(
+                    booking.TotalPrice,
+                    booking.BookingId,
+                    booking.UserId);
+
+                if (booking.Payment != null)
+                {
+                    booking.Payment.TransactionRef = paymentIntent.Id;
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Could not connect to Stripe: {ex.Message}";
+                return RedirectToAction("MyBookings");
             }
         }
 
@@ -332,10 +349,22 @@ public class BookingController : Controller
     [HttpGet]
     public async Task<IActionResult> PaymentSuccess(string paymentIntentId, int bookingId)
     {
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdClaim, out var userId))
+        {
+            return RedirectToAction("Login", "Account", new { area = "Identity" });
+        }
 
-        // Verify payment with Stripe
-        var paymentIntent = await _stripeService.GetPaymentIntentAsync(paymentIntentId);
+        Stripe.PaymentIntent paymentIntent;
+        try
+        {
+            paymentIntent = await _stripeService.GetPaymentIntentAsync(paymentIntentId);
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Could not verify payment with Stripe: {ex.Message}";
+            return RedirectToAction("Payment", new { bookingId });
+        }
 
         var hasValidMetadata = paymentIntent.Metadata.TryGetValue("booking_id", out var metadataBookingId) &&
                                metadataBookingId == bookingId.ToString() &&
@@ -357,10 +386,19 @@ public class BookingController : Controller
             return RedirectToAction("Payment", new { bookingId });
         }
 
-        var result = await _bookingWorkflow.ConfirmPaidBookingAsync(
-            bookingId,
-            paymentIntentId,
-            bookingAmount.Value);
+        BookingOperationResult result;
+        try
+        {
+            result = await _bookingWorkflow.ConfirmPaidBookingAsync(
+                bookingId,
+                paymentIntentId,
+                bookingAmount.Value);
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Could not confirm booking: {ex.Message}";
+            return RedirectToAction("Payment", new { bookingId });
+        }
 
         if (!result.Success)
         {
@@ -370,7 +408,14 @@ public class BookingController : Controller
 
         if (result.Booking != null && result.Changed)
         {
-            await SendConfirmationEmailAsync(result.Booking);
+            try
+            {
+                await SendConfirmationEmailAsync(result.Booking);
+            }
+            catch
+            {
+                // Email failure should not prevent booking confirmation
+            }
         }
 
         TempData["Success"] = result.Message;
@@ -494,7 +539,7 @@ public class BookingController : Controller
         }
 
         // Check if flight already departed
-        if (booking.Flight.DepartureTime < DateTime.Now)
+        if (booking.Flight.DepartureTime < DateTime.UtcNow)
         {
             TempData["Error"] = "Cannot cancel a booking for a flight that has already departed.";
             return RedirectToAction("MyBookings");
@@ -505,6 +550,7 @@ public class BookingController : Controller
         return RedirectToAction("MyBookings");
     }
     // 8. DOWNLOAD TICKET - Generate PDF ticket
+    [HttpGet]
     public async Task<IActionResult> DownloadTicket(int id)
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -571,83 +617,10 @@ public class BookingController : Controller
     }
 
     // Helper Methods
-    private string GetRandomLetter()
+    private static string GetRandomLetter()
     {
         var letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        var random = new Random();
-        return letters[random.Next(letters.Length)].ToString();
-    }
-
-    private async Task<(bool Success, bool WasConfirmed, string Message, Booking? Booking)> ConfirmBookingAsync(
-        int bookingId,
-        int userId,
-        string paymentMethod,
-        string transactionReference,
-        decimal paidAmount)
-    {
-        await using var transaction = await _context.Database
-            .BeginTransactionAsync(IsolationLevel.Serializable);
-
-        var booking = await _context.Bookings
-            .Include(b => b.Payment)
-            .Include(b => b.User)
-            .Include(b => b.Flight)
-            .Include(b => b.Passengers)
-            .FirstOrDefaultAsync(b => b.BookingId == bookingId && b.UserId == userId);
-
-        if (booking == null)
-        {
-            return (false, false, "Booking not found.", null);
-        }
-
-        if (booking.Status == "Confirmed" || booking.Status == "Completed")
-        {
-            return (true, false, "This booking is already confirmed.", booking);
-        }
-
-        if (booking.Status != "Pending" || booking.Payment == null)
-        {
-            return (false, false, "This booking cannot be confirmed.", booking);
-        }
-
-        if (paidAmount != booking.TotalPrice)
-        {
-            return (false, false, "The paid amount does not match the booking total.", booking);
-        }
-
-        if (!booking.Passengers.Any() || booking.Flight.AvailableSeats < booking.Passengers.Count)
-        {
-            return (false, false, "Not enough seats are available to confirm this booking.", booking);
-        }
-
-        foreach (var passengerGroup in booking.Passengers.GroupBy(p => p.ClassId))
-        {
-            var flightSeatClass = await _context.FlightSeatClasses
-                .FirstOrDefaultAsync(fsc =>
-                    fsc.FlightId == booking.FlightId && fsc.ClassId == passengerGroup.Key);
-
-            if (flightSeatClass == null || flightSeatClass.AvailableSeats < passengerGroup.Count())
-            {
-                return (false, false, "Not enough seats are available in the selected class.", booking);
-            }
-
-            flightSeatClass.AvailableSeats -= passengerGroup.Count();
-        }
-
-        booking.Flight.AvailableSeats -= booking.Passengers.Count;
-        booking.Status = "Confirmed";
-        booking.Payment.Amount = booking.TotalPrice;
-        booking.Payment.PayStatus = "Completed";
-        booking.Payment.PayMethod = paymentMethod;
-        booking.Payment.PayDate = DateTime.Now;
-        booking.Payment.TransactionRef = transactionReference;
-
-        await _context.SaveChangesAsync();
-        await CreateTicketsAsync(booking.BookingId);
-        await AddRewardPoints(booking.UserId, booking.BookingId, booking.TotalPrice);
-        await transaction.CommitAsync();
-
-        return (true, true, "Payment successful! Your booking has been confirmed. ✈️", booking);
+        return letters[Random.Shared.Next(letters.Length)].ToString();
     }
 
     private async Task AddRewardPoints(int userId, int bookingId, decimal amount)
@@ -686,7 +659,7 @@ public class BookingController : Controller
             AccountId = rewardAccount.AccountId, 
             Points = pointsToAdd,
             Type = "Earned",
-            Date = DateTime.Now,
+            Date = DateTime.UtcNow,
             Description = $"Earned {pointsToAdd} points from booking AF{bookingId:D6}",
             BookingId = bookingId
         };
@@ -726,7 +699,7 @@ public class BookingController : Controller
                     BookingId = bookingId,
                     FlightId = passenger.FlightId,
                     PassengerId = passenger.PassengerId,
-                    IssueDate = DateTime.Now,
+                    IssueDate = DateTime.UtcNow,
                     SeatNum = $"{seatCounter:D2}{GetRandomLetter()}",
                     QrCode = Guid.NewGuid().ToString()
                 });

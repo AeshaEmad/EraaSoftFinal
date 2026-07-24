@@ -81,7 +81,7 @@
                             }
                             <div class="dropdown">
                                 <button class="profile-trigger dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="profile-avatar">@((User.Identity?.Name ?? "U").Substring(0, 1).ToUpperInvariant())</span>
+                                    <span class="profile-avatar">@((User.Identity?.Name is string n && n.Length > 0 ? n.Substring(0, 1) : "U").ToUpperInvariant())</span>
                                     <span class="profile-copy d-none d-xl-block">
                                         <small>@L["Welcome back"]</small>
                                         <strong>@User.Identity?.Name</strong>
@@ -172,6 +172,11 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        toastr.options = { "positionClass": "toast-top-right", "timeOut": "4000", "progressBar": true };
+    </script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

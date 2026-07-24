@@ -87,7 +87,7 @@ public class BookingWorkflowService : IBookingWorkflowService
         booking.SeatHoldExpiresAt = null;
         booking.Payment.Amount = booking.TotalPrice;
         booking.Payment.PayStatus = "Completed";
-        booking.Payment.PayMethod = "CreditCard";
+        booking.Payment.PayMethod = booking.Payment.PayMethod ?? "CreditCard";
         booking.Payment.PayDate = DateTime.UtcNow;
         booking.Payment.TransactionRef = paymentIntentId;
 
@@ -225,13 +225,8 @@ public class BookingWorkflowService : IBookingWorkflowService
 
         if (booking == null)
         {
+            await transaction.RollbackAsync(cancellationToken);
             return new(false, false, "Booking not found.");
-        }
-
-        if (booking.Status == "Cancelled" && booking.Payment?.PayStatus == "Refunded")
-        {
-            await transaction.CommitAsync(cancellationToken);
-            return new(true, false, "Booking is already cancelled and refunded.", booking);
         }
 
         if (booking.SeatsReserved)
@@ -317,18 +312,28 @@ public class BookingWorkflowService : IBookingWorkflowService
         {
             return false;
         }
-        var seatClass = await _db.FlightSeatClasses.FirstOrDefaultAsync(
-            f => f.FlightId == booking.FlightId && f.ClassId == booking.Passengers.First().ClassId,
-            cancellationToken);
-        if (seatClass == null || seatClass.AvailableSeats < passengerCount)
+
+        var passengerGroups = booking.Passengers.GroupBy(p => p.ClassId).ToList();
+        foreach (var group in passengerGroups)
         {
-            return false;
+            var seatClass = await _db.FlightSeatClasses.FirstOrDefaultAsync(
+                f => f.FlightId == booking.FlightId && f.ClassId == group.Key,
+                cancellationToken);
+            if (seatClass == null || seatClass.AvailableSeats < group.Count())
+            {
+                return false;
+            }
         }
 
-        seatClass.AvailableSeats -= passengerCount;
-        booking.Flight.AvailableSeats = await _db.FlightSeatClasses
-            .Where(f => f.FlightId == booking.FlightId)
-            .SumAsync(f => f.AvailableSeats, cancellationToken) - passengerCount;
+        foreach (var group in passengerGroups)
+        {
+            var seatClass = await _db.FlightSeatClasses.FirstOrDefaultAsync(
+                f => f.FlightId == booking.FlightId && f.ClassId == group.Key,
+                cancellationToken);
+            seatClass!.AvailableSeats -= group.Count();
+        }
+
+        booking.Flight.AvailableSeats -= passengerCount;
         booking.SeatsReserved = true;
         return true;
     }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using AeroFly.Web.Data;
 using AeroFly.Web.Models;
 using AeroFly.Web.Services;
@@ -53,7 +54,7 @@ public class AccountController : Controller
             return View(model);
         }
 
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         var token = GenerateToken();
 
         var user = new AeroFly.Web.Models.User
@@ -67,7 +68,7 @@ public class AccountController : Controller
             CreatedYear = now.Year,
             EmailConfirmed = false,
             EmailConfirmToken = token,
-            EmailConfirmTokenExpiry = DateTime.Now.AddHours(24),
+            EmailConfirmTokenExpiry = DateTime.UtcNow.AddHours(24),
         };
 
         user.Password = _passwordHasher.HashPassword(user, model.Password);
@@ -113,8 +114,11 @@ public class AccountController : Controller
         var model = new ConfirmEmailViewModel { Email = email };
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
 
-        if (user == null || user.EmailConfirmToken != token ||
-            user.EmailConfirmTokenExpiry < DateTime.Now)
+        if (user == null ||
+            !CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(user.EmailConfirmToken ?? ""),
+                Encoding.UTF8.GetBytes(token ?? "")) ||
+            user.EmailConfirmTokenExpiry < DateTime.UtcNow)
         {
             model.IsSuccess = false;
             model.Message = "Invalid or expired confirmation link.";
@@ -135,7 +139,7 @@ public class AccountController : Controller
 
         var otp = GenerateOtp();
         user.OtpCode = otp;
-        user.OtpExpiry = DateTime.Now.AddMinutes(10);
+        user.OtpExpiry = DateTime.UtcNow.AddMinutes(10);
         user.OtpVerified = false;
         await _db.SaveChangesAsync();
 
@@ -165,7 +169,11 @@ public class AccountController : Controller
 
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
 
-        if (user == null || user.OtpCode != model.OtpCode || user.OtpExpiry < DateTime.Now)
+        if (user == null ||
+            !CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(user.OtpCode ?? ""),
+                Encoding.UTF8.GetBytes(model.OtpCode ?? "")) ||
+            user.OtpExpiry < DateTime.UtcNow)
         {
             ModelState.AddModelError("OtpCode", "Invalid or expired OTP code.");
             return View(model);
@@ -206,7 +214,7 @@ public class AccountController : Controller
         // Check if account is locked
         if (user.IsLockedOut)
         {
-            ModelState.AddModelError("", $"Account is locked. Please try again after {user.LockoutEnd?.ToString("hh:mm tt")}.");
+            ModelState.AddModelError("", "Invalid email or password.");
             return View(model);
         }
 
@@ -217,8 +225,7 @@ public class AccountController : Controller
             user.RecordFailedAttempt();
             await _db.SaveChangesAsync();
 
-            var remainingAttempts = 5 - user.AccessFailedCount;
-            ModelState.AddModelError("", $"Invalid password. {remainingAttempts} attempts remaining.");
+            ModelState.AddModelError("", "Invalid email or password.");
             return View(model);
         }
 
@@ -227,22 +234,23 @@ public class AccountController : Controller
             user.Password = _passwordHasher.HashPassword(user, model.Password);
         }
 
-        // Password is correct - reset lockout
-        user.ResetLockout();
-        user.LastLoginDate = DateTime.UtcNow;
-
         if (!user.EmailConfirmed)
         {
             ModelState.AddModelError("", "Please confirm your email address first.");
+            await _db.SaveChangesAsync();
             return View(model);
         }
 
         if (!user.OtpVerified)
         {
             ModelState.AddModelError("", "Please complete OTP verification first.");
+            await _db.SaveChangesAsync();
             return View(model);
         }
 
+        // Password is correct and all checks passed - reset lockout
+        user.ResetLockout();
+        user.LastLoginDate = DateTime.UtcNow;
         await _db.SaveChangesAsync();
 
         var isAdmin = user.Admin != null;
@@ -309,7 +317,7 @@ public class AccountController : Controller
         {
             var token = GenerateToken();
             user.ResetPasswordToken = token;
-            user.ResetPasswordTokenExpiry = DateTime.Now.AddHours(1);
+            user.ResetPasswordTokenExpiry = DateTime.UtcNow.AddHours(1);
             await _db.SaveChangesAsync();
 
             var resetLink = Url.Action("ResetPassword", "Account",
@@ -340,8 +348,11 @@ public class AccountController : Controller
 
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
 
-        if (user == null || user.ResetPasswordToken != model.Token ||
-            user.ResetPasswordTokenExpiry < DateTime.Now)
+        if (user == null ||
+            !CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(user.ResetPasswordToken ?? ""),
+                Encoding.UTF8.GetBytes(model.Token ?? "")) ||
+            user.ResetPasswordTokenExpiry < DateTime.UtcNow)
         {
             ModelState.AddModelError("", "Invalid or expired reset link.");
             return View(model);
@@ -415,7 +426,7 @@ public class AccountController : Controller
         {
             var otp = GenerateOtp();
             user.OtpCode = otp;
-            user.OtpExpiry = DateTime.Now.AddMinutes(10);
+            user.OtpExpiry = DateTime.UtcNow.AddMinutes(10);
             await _db.SaveChangesAsync();
 
             await _emailService.SendOtpEmailAsync(user.Email,

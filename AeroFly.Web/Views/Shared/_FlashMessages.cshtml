@@ -1,54 +1,29 @@
-﻿@if (TempData["Success"] != null)
-{
-    <script>
-        toastr.success('@TempData["Success"]');
-    </script>
-}
+﻿@using System.Text.Json
 
-@if (TempData["Error"] != null)
-{
-    <script>
-        toastr.error('@TempData["Error"]');
-    </script>
-}
-
-@if (TempData["Warning"] != null)
-{
-    <script>
-        toastr.warning('@TempData["Warning"]');
-    </script>
-}
-
-@if (TempData["Info"] != null)
-{
-    <script>
-        toastr.info('@TempData["Info"]');
-    </script>
-}
 @if (TempData["Success"] != null)
 {
     <script>
-        toastr.success('@TempData["Success"]');
+        toastr.success(@Html.Raw(JsonSerializer.Serialize(TempData["Success"])));
     </script>
 }
 
 @if (TempData["Error"] != null)
 {
     <script>
-        toastr.error('@TempData["Error"]');
+        toastr.error(@Html.Raw(JsonSerializer.Serialize(TempData["Error"])));
     </script>
 }
 
 @if (TempData["Warning"] != null)
 {
     <script>
-        toastr.warning('@TempData["Warning"]');
+        toastr.warning(@Html.Raw(JsonSerializer.Serialize(TempData["Warning"])));
     </script>
 }
 
 @if (TempData["Info"] != null)
 {
     <script>
-        toastr.info('@TempData["Info"]');
+        toastr.info(@Html.Raw(JsonSerializer.Serialize(TempData["Info"])));
     </script>
 }

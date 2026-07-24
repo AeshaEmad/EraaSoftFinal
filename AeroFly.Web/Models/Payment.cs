@@ -31,6 +31,7 @@ public class Payment
     public DateTime PayDate { get; set; } = DateTime.Now;
 
     [Required]
+    [MaxLength(100)]
     [Display(Name = "Transaction Reference")]
     public string TransactionRef { get; set; } = Guid.NewGuid().ToString();
 

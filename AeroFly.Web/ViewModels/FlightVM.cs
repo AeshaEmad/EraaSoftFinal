@@ -59,7 +59,9 @@ public class FlightVM
     public TimeSpan Duration => ArrivalTime - DepartureTime;
 
     [Display(Name = "Duration (hours)")]
-    public string DurationHours => Duration.ToString(@"hh\:mm");
+    public string DurationHours => Duration.TotalHours >= 24
+        ? $"{(int)Duration.TotalHours}h {Duration.Minutes:D2}m"
+        : Duration.ToString(@"hh\:mm");
 
     [Display(Name = "Full Route")]
     public string FullRoute => $"{DepartureIataCode} → {ArrivalIataCode}";

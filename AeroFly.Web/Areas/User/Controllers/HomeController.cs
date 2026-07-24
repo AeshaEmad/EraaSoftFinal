@@ -41,7 +41,7 @@ public class HomeController : Controller
                 .ToListAsync(),
             DepartureAirportId = departureAirportId,
             ArrivalAirportId = arrivalAirportId,
-            DepartureDate = departureDate ?? DateTime.Now.AddDays(1),
+            DepartureDate = departureDate ?? DateTime.UtcNow.AddDays(1),
             SeatClassId = seatClassId,
             PassengerCount = passengers ?? 1,
             TripType = "OneWay",
@@ -64,7 +64,7 @@ public class HomeController : Controller
             .Include(f => f.DepartureAirport)
             .Include(f => f.ArrivalAirport)
             .Where(f => (f.Status == "Scheduled" || f.Status == "Delayed") &&
-                        f.DepartureTime > DateTime.Now)
+                        f.DepartureTime > DateTime.UtcNow)
             .AsQueryable();
 
         // Apply filters
@@ -131,26 +131,9 @@ public class HomeController : Controller
 
     // SEARCH - POST (Process and redirect to GET)
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult Search(SearchFlightVM model)
     {
-        // Build query string with proper parameters
-        var queryParams = new List<string>();
-
-        if (model.DepartureAirportId.HasValue)
-            queryParams.Add($"departureAirportId={model.DepartureAirportId.Value}");
-
-        if (model.ArrivalAirportId.HasValue)
-            queryParams.Add($"arrivalAirportId={model.ArrivalAirportId.Value}");
-
-        if (model.DepartureDate.HasValue)
-            queryParams.Add($"departureDate={model.DepartureDate.Value:yyyy-MM-dd}");
-
-        if (model.SeatClassId.HasValue)
-            queryParams.Add($"seatClassId={model.SeatClassId.Value}");
-
-        queryParams.Add($"passengers={model.PassengerCount}");
-
-        //  Direct redirect with query parameters
         return RedirectToAction("Index", new
         {
             departureAirportId = model.DepartureAirportId,

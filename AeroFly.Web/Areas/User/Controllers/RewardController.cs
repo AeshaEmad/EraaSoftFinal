@@ -143,7 +143,7 @@ public class RewardController : Controller
             AccountId = rewardAccount.AccountId,
             Points = -pointsToUse,
             Type = "Redeemed",
-            Date = DateTime.Now,
+            Date = DateTime.UtcNow,
             Description = $"Redeemed {pointsToUse} points for ${discount} discount",
             BookingId = booking.BookingId
         };

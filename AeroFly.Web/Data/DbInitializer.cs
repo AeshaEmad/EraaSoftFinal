@@ -25,56 +25,68 @@ public static class DbInitializer
             await context.Database.EnsureCreatedAsync();
         }
 
-        // Disable and demote the legacy fixed administrator if it exists in an
-        // already-created database. A new SuperAdmin can then be bootstrapped safely.
-        var legacyAdmin = await context.Users
-            .Include(u => u.Admin)
-            .FirstOrDefaultAsync(u => u.Email == "admin@aerofly.com");
-        if (legacyAdmin?.Admin != null)
-        {
-            context.Admins.Remove(legacyAdmin.Admin);
-            legacyAdmin.Password = passwordHasher.HashPassword(
-                legacyAdmin,
-                Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48)));
-            legacyAdmin.LockoutEnd = DateTime.MaxValue;
-            legacyAdmin.SecurityStamp = Guid.NewGuid().ToString("N");
-            await context.SaveChangesAsync();
-        }
-
-        // The first SuperAdmin is created only when explicit deployment secrets are supplied.
-        // Configure Security__BootstrapAdminEmail and Security__BootstrapAdminPassword once,
-        // sign in, change the password, then remove both environment variables.
+        // Only bootstrap a new admin if no admins exist yet.
         if (!await context.Admins.AnyAsync())
         {
             var email = configuration["Security:BootstrapAdminEmail"]?.Trim().ToLowerInvariant();
             var password = configuration["Security:BootstrapAdminPassword"];
             if (!string.IsNullOrWhiteSpace(email) && IsStrongBootstrapPassword(password))
             {
-                var now = DateTime.UtcNow;
-                var adminUser = new User
+                // Check if the user already exists (e.g. old DbInitializer locked them out)
+                var existingUser = await context.Users
+                    .FirstOrDefaultAsync(u => u.Email == email);
+
+                if (existingUser != null)
                 {
-                    FName = "Initial",
-                    LName = "Administrator",
-                    Email = email,
-                    Password = string.Empty,
-                    CreatedDay = now.Day,
-                    CreatedMonth = now.Month,
-                    CreatedYear = now.Year,
-                    EmailConfirmed = true,
-                    OtpVerified = true,
-                    MustChangePassword = true
-                };
-                adminUser.Password = passwordHasher.HashPassword(adminUser, password!);
-                context.Users.Add(adminUser);
-                await context.SaveChangesAsync();
-                context.Admins.Add(new Admin
+                    // Re-enable the existing locked-out user
+                    existingUser.Password = passwordHasher.HashPassword(existingUser, password!);
+                    existingUser.LockoutEnd = null;
+                    existingUser.AccessFailedCount = 0;
+                    existingUser.SecurityStamp = Guid.NewGuid().ToString("N");
+                    existingUser.EmailConfirmed = true;
+                    existingUser.OtpVerified = true;
+                    existingUser.MustChangePassword = true;
+                    existingUser.FName = "Initial";
+                    existingUser.LName = "Administrator";
+                    await context.SaveChangesAsync();
+
+                    context.Admins.Add(new Admin
+                    {
+                        UserId = existingUser.UserId,
+                        AdminLevel = "SuperAdmin",
+                        Permissions = "All"
+                    });
+                    await context.SaveChangesAsync();
+                }
+                else
                 {
-                    UserId = adminUser.UserId,
-                    AdminLevel = "SuperAdmin",
-                    Permissions = "All"
-                });
-                context.RewardAccounts.Add(new RewardAccount { UserId = adminUser.UserId });
-                await context.SaveChangesAsync();
+                    // Create brand-new admin user
+                    var now = DateTime.UtcNow;
+                    var adminUser = new User
+                    {
+                        FName = "Initial",
+                        LName = "Administrator",
+                        Email = email,
+                        Password = string.Empty,
+                        CreatedDay = now.Day,
+                        CreatedMonth = now.Month,
+                        CreatedYear = now.Year,
+                        EmailConfirmed = true,
+                        OtpVerified = true,
+                        MustChangePassword = true
+                    };
+                    adminUser.Password = passwordHasher.HashPassword(adminUser, password);
+                    context.Users.Add(adminUser);
+                    await context.SaveChangesAsync();
+                    context.Admins.Add(new Admin
+                    {
+                        UserId = adminUser.UserId,
+                        AdminLevel = "SuperAdmin",
+                        Permissions = "All"
+                    });
+                    context.RewardAccounts.Add(new RewardAccount { UserId = adminUser.UserId });
+                    await context.SaveChangesAsync();
+                }
             }
         }
 

@@ -182,100 +182,6 @@ public class BookingController : Controller
         var result = await _bookingWorkflow.CancelAndRefundAsync(id);
         TempData[result.Success ? "Success" : "Error"] = result.Message;
         return RedirectToAction(nameof(Index));
-
-#pragma warning disable CS0162
-        var booking = await _context.Bookings
-            .Include(b => b.Payment)
-            .Include(b => b.Tickets)
-            .Include(b => b.Passengers)
-            .Include(b => b.User)
-                .ThenInclude(u => u.RewardAccount)
-            .Include(b => b.Flight)
-            .FirstOrDefaultAsync(b => b.BookingId == id);
-
-        if (booking == null)
-        {
-            TempData["Error"] = "Booking not found!";
-            return RedirectToAction(nameof(Index));
-        }
-
-        // Check if booking can be cancelled
-        if (booking.Status == "Cancelled")
-        {
-            TempData["Warning"] = "This booking is already cancelled.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        if (booking.Status == "Completed")
-        {
-            TempData["Error"] = "Cannot cancel a completed booking.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        // Check if flight already departed
-        if (booking.Flight.DepartureTime < DateTime.Now)
-        {
-            TempData["Error"] = "Cannot cancel a booking for a flight that has already departed.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        await using var transaction = await _context.Database
-            .BeginTransactionAsync(IsolationLevel.Serializable);
-
-        // Refund points if used
-        if (booking.PointsUsed > 0 && booking.User.RewardAccount != null)
-        {
-            booking.User.RewardAccount.PointsBalance += booking.PointsUsed;
-            _context.PointsTransactions.Add(new PointsTransaction
-            {
-                AccountId = booking.User.RewardAccount.AccountId,
-                Points = booking.PointsUsed,
-                Type = "Refunded",
-                Date = DateTime.Now,
-                Description = $"Refunded {booking.PointsUsed} redeemed points after cancelling {booking.PNR}"
-            });
-        }
-
-        if (booking.Status == "Confirmed")
-        {
-            booking.Flight.AvailableSeats += booking.Passengers.Count;
-
-            foreach (var passengerGroup in booking.Passengers.GroupBy(p => p.ClassId))
-            {
-                var flightSeatClass = await _context.FlightSeatClasses
-                    .FirstOrDefaultAsync(fsc =>
-                        fsc.FlightId == booking.FlightId && fsc.ClassId == passengerGroup.Key);
-
-                if (flightSeatClass != null)
-                {
-                    flightSeatClass.AvailableSeats += passengerGroup.Count();
-                }
-            }
-        }
-
-        // Update payment status if exists
-        if (booking.Payment != null && booking.Payment.PayStatus == "Completed")
-        {
-            booking.Payment.PayStatus = "Refunded";
-            booking.Payment.PayDate = DateTime.Now;
-        }
-
-        // Cancel tickets
-        foreach (var ticket in booking.Tickets)
-        {
-            // Mark ticket as cancelled (or remove)
-            _context.Tickets.Remove(ticket);
-        }
-
-        // Update booking status
-        booking.Status = "Cancelled";
-
-        await _context.SaveChangesAsync();
-        await transaction.CommitAsync();
-
-        TempData["Success"] = $"Booking {booking.PNR} has been cancelled and refunded successfully!";
-        return RedirectToAction(nameof(Index));
-#pragma warning restore CS0162
     }
 
      
@@ -288,114 +194,6 @@ public class BookingController : Controller
         TempData["Error"] = "Card bookings are confirmed only by a verified Stripe payment or webhook.";
         await Task.CompletedTask;
         return RedirectToAction(nameof(Index));
-
-#pragma warning disable CS0162
-        await using var transaction = await _context.Database
-            .BeginTransactionAsync(IsolationLevel.Serializable);
-
-        var booking = await _context.Bookings
-            .Include(b => b.Payment)
-            .Include(b => b.Flight)
-            .Include(b => b.Passengers)
-            .Include(b => b.User)
-                .ThenInclude(u => u.RewardAccount)
-            .FirstOrDefaultAsync(b => b.BookingId == id);
-
-        if (booking == null)
-        {
-            TempData["Error"] = "Booking not found!";
-            return RedirectToAction(nameof(Index));
-        }
-
-        if (booking.Status != "Pending")
-        {
-            TempData["Warning"] = $"Booking is already {booking.Status}.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        if (booking.Payment == null || booking.Payment.PayStatus != "Completed")
-        {
-            TempData["Error"] = "Cannot confirm booking without completed payment.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        if (!booking.Passengers.Any() || booking.Flight.AvailableSeats < booking.Passengers.Count)
-        {
-            TempData["Error"] = "Not enough seats are available to confirm this booking.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        foreach (var passengerGroup in booking.Passengers.GroupBy(p => p.ClassId))
-        {
-            var flightSeatClass = await _context.FlightSeatClasses
-                .FirstOrDefaultAsync(fsc =>
-                    fsc.FlightId == booking.FlightId && fsc.ClassId == passengerGroup.Key);
-
-            if (flightSeatClass == null || flightSeatClass.AvailableSeats < passengerGroup.Count())
-            {
-                TempData["Error"] = "Not enough seats are available in the selected class.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            flightSeatClass.AvailableSeats -= passengerGroup.Count();
-        }
-
-        booking.Flight.AvailableSeats -= booking.Passengers.Count;
-        booking.Status = "Confirmed";
-
-        var rewardAccount = booking.User.RewardAccount;
-        if (rewardAccount == null)
-        {
-            rewardAccount = new RewardAccount
-            {
-                UserId = booking.UserId,
-                PointsBalance = 0
-            };
-            _context.RewardAccounts.Add(rewardAccount);
-            await _context.SaveChangesAsync();
-        }
-
-        if (!await _context.PointsTransactions.AnyAsync(t => t.BookingId == booking.BookingId))
-        {
-            var points = (int)Math.Floor(booking.TotalPrice);
-            rewardAccount.PointsBalance += points;
-            _context.PointsTransactions.Add(new PointsTransaction
-            {
-                AccountId = rewardAccount.AccountId,
-                BookingId = booking.BookingId,
-                Points = points,
-                Type = "Earned",
-                Date = DateTime.Now,
-                Description = $"Earned {points} points from booking {booking.PNR}"
-            });
-        }
-
-        var existingPassengerIds = await _context.Tickets
-            .Where(t => t.BookingId == booking.BookingId)
-            .Select(t => t.PassengerId)
-            .ToListAsync();
-
-        var seatCounter = existingPassengerIds.Count + 1;
-        foreach (var passenger in booking.Passengers.Where(p => !existingPassengerIds.Contains(p.PassengerId)))
-        {
-            _context.Tickets.Add(new Ticket
-            {
-                BookingId = booking.BookingId,
-                FlightId = booking.FlightId,
-                PassengerId = passenger.PassengerId,
-                IssueDate = DateTime.Now,
-                SeatNum = $"{seatCounter:D2}{GetRandomLetter()}",
-                QrCode = Guid.NewGuid().ToString()
-            });
-            seatCounter++;
-        }
-
-        await _context.SaveChangesAsync();
-        await transaction.CommitAsync();
-
-        TempData["Success"] = $"Booking {booking.PNR} has been confirmed successfully!";
-        return RedirectToAction(nameof(Index));
-#pragma warning restore CS0162
     }
 
      
@@ -575,7 +373,7 @@ public class BookingController : Controller
             AccountId = rewardAccount.AccountId,
             Points = points,
             Type = "Earned",
-            Date = DateTime.Now,
+            Date = DateTime.UtcNow,
             Description = $"Admin added {points} points"
         };
 
@@ -586,10 +384,9 @@ public class BookingController : Controller
         return RedirectToAction("Details", "User", new { id = userId });
     }
 
-    private string GetRandomLetter()
+    private static string GetRandomLetter()
     {
         var letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        var random = new Random();
-        return letters[random.Next(letters.Length)].ToString();
+        return letters[Random.Shared.Next(letters.Length)].ToString();
     }
 }

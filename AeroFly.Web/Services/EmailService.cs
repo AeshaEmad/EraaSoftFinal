@@ -2,6 +2,7 @@
 using AeroFly.Web.ViewModels;
 using System.Net;
 using System.Net.Mail;
+using System.Web;
 
 namespace AeroFly.Web.Services;
 
@@ -52,6 +53,8 @@ public class EmailService : IEmailService
     public async Task SendConfirmationEmailAsync(string toEmail, string userName, string confirmLink)
     {
         var subject = "✈️ Confirm Your Email - AeroFly";
+        var safeName = HttpUtility.HtmlEncode(userName);
+        var safeLink = HttpUtility.HtmlEncode(confirmLink);
         var body = $@"
         <div style=""font-family:Arial,sans-serif; max-width:600px; margin:auto; background:#0a0a1a; color:#ffffff; border-radius:12px; overflow:hidden;"">
             <div style=""background:linear-gradient(135deg,#1a1a3e,#0d6efd); padding:40px; text-align:center;"">
@@ -59,10 +62,10 @@ public class EmailService : IEmailService
                 <p style=""margin:8px 0 0; opacity:.8;"">Flight Reservation System</p>
             </div>
             <div style=""padding:40px;"">
-                <h2 style=""color:#4da6ff; margin-top:0;"">Hello, {userName}! 👋</h2>
+                <h2 style=""color:#4da6ff; margin-top:0;"">Hello, {safeName}! 👋</h2>
                 <p style=""color:#ccc; line-height:1.7;"">Thank you for registering. Please click the button below to activate your account:</p>
                 <div style=""text-align:center; margin:35px 0;"">
-                    <a href=""{confirmLink}"" style=""background:linear-gradient(135deg,#0d6efd,#0dcaf0); color:#fff; padding:15px 40px; border-radius:50px; text-decoration:none; font-size:16px; font-weight:bold;"">
+                    <a href=""{safeLink}"" style=""background:linear-gradient(135deg,#0d6efd,#0dcaf0); color:#fff; padding:15px 40px; border-radius:50px; text-decoration:none; font-size:16px; font-weight:bold;"">
                         ✅ Confirm Email
                     </a>
                 </div>
@@ -79,16 +82,18 @@ public class EmailService : IEmailService
     public async Task SendOtpEmailAsync(string toEmail, string userName, string otpCode)
     {
         var subject = "🔐 Your OTP Verification Code - AeroFly";
+        var safeName = HttpUtility.HtmlEncode(userName);
+        var safeOtp = HttpUtility.HtmlEncode(otpCode);
         var body = $@"
         <div style=""font-family:Arial,sans-serif; max-width:600px; margin:auto; background:#0a0a1a; color:#ffffff; border-radius:12px; overflow:hidden;"">
             <div style=""background:linear-gradient(135deg,#1a1a3e,#0d6efd); padding:40px; text-align:center;"">
                 <h1 style=""margin:0; font-size:28px;"">✈️ AeroFly</h1>
             </div>
             <div style=""padding:40px;"">
-                <h2 style=""color:#4da6ff; margin-top:0;"">Hello, {userName}! 🔐</h2>
+                <h2 style=""color:#4da6ff; margin-top:0;"">Hello, {safeName}! 🔐</h2>
                 <p style=""color:#ccc; line-height:1.7;"">Your verification code is:</p>
                 <div style=""background:#111827; border:2px solid #0d6efd; border-radius:12px; padding:25px; text-align:center; margin:25px 0;"">
-                    <span style=""font-size:42px; font-weight:bold; letter-spacing:8px; color:#4da6ff; font-family:monospace;"">{otpCode}</span>
+                    <span style=""font-size:42px; font-weight:bold; letter-spacing:8px; color:#4da6ff; font-family:monospace;"">{safeOtp}</span>
                 </div>
                 <p style=""color:#888; font-size:13px;"">⏰ This code is valid for <strong style=""color:#ffc107;"">10 minutes</strong> only.</p>
             </div>
@@ -103,6 +108,8 @@ public class EmailService : IEmailService
     public async Task SendResetPasswordEmailAsync(string toEmail, string userName, string resetLink)
     {
         var subject = "🔑 Reset Your Password - AeroFly";
+        var safeName = HttpUtility.HtmlEncode(userName);
+        var safeLink = HttpUtility.HtmlEncode(resetLink);
         var body = $@"
         <div style=""font-family:Arial,sans-serif; max-width:600px; margin:auto; background:#0a0a1a; color:#ffffff; border-radius:12px; overflow:hidden;"">
             <div style=""background:linear-gradient(135deg,#1a1a3e,#dc3545); padding:40px; text-align:center;"">
@@ -110,9 +117,9 @@ public class EmailService : IEmailService
             </div>
             <div style=""padding:40px;"">
                 <h2 style=""color:#ff6b6b; margin-top:0;"">Reset Your Password 🔑</h2>
-                <p style=""color:#ccc; line-height:1.7;"">Hello {userName}, we received a request to reset your password. Click the button below to proceed:</p>
+                <p style=""color:#ccc; line-height:1.7;"">Hello {safeName}, we received a request to reset your password. Click the button below to proceed:</p>
                 <div style=""text-align:center; margin:35px 0;"">
-                    <a href=""{resetLink}"" style=""background:linear-gradient(135deg,#dc3545,#fd7e14); color:#fff; padding:15px 40px; border-radius:50px; text-decoration:none; font-size:16px; font-weight:bold;"">
+                    <a href=""{safeLink}"" style=""background:linear-gradient(135deg,#dc3545,#fd7e14); color:#fff; padding:15px 40px; border-radius:50px; text-decoration:none; font-size:16px; font-weight:bold;"">
                         🔑 Reset Password
                     </a>
                 </div>
@@ -130,14 +137,15 @@ public class EmailService : IEmailService
     {
         var subject = $"✈️ Booking Confirmed - {booking.FlightNumber} - AeroFly";
 
+        var safeUserName = HttpUtility.HtmlEncode(userName);
         var departureDate = booking.DepartureTime.ToString("dd MMM yyyy");
         var departureTime = booking.DepartureTime.ToString("HH:mm");
         var arrivalTime = booking.ArrivalTime.ToString("HH:mm");
 
         var passengerRows = string.Join("\n", booking.Passengers.Select(p =>
             $@"<tr>
-                <td style=""padding:8px 12px; border-bottom:1px solid #e9ecef;"">{p.FullName}</td>
-                <td style=""padding:8px 12px; border-bottom:1px solid #e9ecef;"">{p.PassportNumber}</td>
+                <td style=""padding:8px 12px; border-bottom:1px solid #e9ecef;"">{HttpUtility.HtmlEncode(p.FullName)}</td>
+                <td style=""padding:8px 12px; border-bottom:1px solid #e9ecef;"">{HttpUtility.HtmlEncode(p.PassportNumber)}</td>
                 <td style=""padding:8px 12px; border-bottom:1px solid #e9ecef;"">{p.Age}</td>
                </tr>"));
 
@@ -156,7 +164,7 @@ public class EmailService : IEmailService
 
     <!-- Body -->
     <div style=""padding:30px;"">
-      <h2 style=""color:#1a3a6b; margin-top:0;"">Hello, {userName}! 👋</h2>
+      <h2 style=""color:#1a3a6b; margin-top:0;"">Hello, {safeUserName}! 👋</h2>
       <p style=""color:#555;"">Your booking has been confirmed. Here are your flight details:</p>
 
       <!-- Booking ID -->
